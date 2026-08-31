@@ -5,44 +5,54 @@
 
 _"I saw the angel in the marble and carved until I set him free."_ — attributed to Michelangelo
 
-One tree, two metaphysics. A single-file interactive demonstration that
+One form, two metaphysics. A single-file interactive demonstration that
 generation-by-removal and generation-by-addition are the same act read in
 opposite directions.
 
 == Live
 
-https://claude.ai/code/artifact/38d095d3-4957-415c-9ac0-4ff2d3ad2773
+* GitHub Pages: https://metadatastician.github.io/large-language-michelangelo/
+* Claude artifact: https://claude.ai/code/artifact/38d095d3-4957-415c-9ac0-4ff2d3ad2773
 
 == What it shows
 
-Two synced 3-D panes, one shared timeline, one deterministic tree definition
-(seeded PRNG → branch skeleton → voxel raster, 29,160 cells).
+Two synced 3-D panes, one shared timeline, one deterministic form definition
+(seeded PRNG → form geometry → voxel raster, 29,160 cells). A picker offers
+five forms — tree, torus knot, letter M, chess rook, castle — all consumed
+by the same machinery; only each form's `fill()` differs.
 
 The Sculptor (left)::
-Begins with a solid marble block that already contains the tree. The only
-operation ever applied is *remove* — 26,521 chisel strokes in an outside-in
-wavefront, chips falling and settling into a rubble ring. An X-ray toggle
-ghosts the block to show the form waiting inside before a single stroke has
-landed. Ledger: `N removals · 0 additions`.
+Begins with a solid marble block that already contains the form. The only
+operation ever applied is *remove* — tens of thousands of chisel strokes in
+an outside-in wavefront, chips falling and settling into a rubble ring. An
+X-ray toggle ghosts the block to show the form waiting inside before a
+single stroke has landed. Ledger: `N removals · 0 additions`. Epigraph:
+_per forza di levare_, Michelangelo's own phrase for sculpture by taking
+away (1549 letter to Benedetto Varchi).
 
 The Gardener (right)::
-Begins with bare ground and a rulebook. The only operation is *add* — 2,639
-voxels placed in growth order along the branch skeleton, while the rendering
-bootstraps its own colour depth as it matures: one bit, then greys, then four
-colours, then full RGB. Ledger: `0 removals · N additions`.
+Begins with bare ground and a rulebook (_per via di porre_). The only
+operation is *add* — the form's voxels placed in its own growth order
+(root to crown, along the knot, course upon course), while the rendering
+bootstraps its own colour depth as it matures: one bit, then greys, then
+four colours, then full RGB — with the palette derived from the chosen
+form's luminance quartiles. Ledger: `0 removals · N additions`.
 
 The invariant::
 Both panes consume the identical voxel set. Their final frames are the same
-tree; only the temporal order of operations differs. The page states the
-arithmetic: tree voxels + removals = block (2,639 + 26,521 = 29,160).
+form; only the temporal order of operations differs. The page states the
+arithmetic (for the default tree: 2,639 + 26,521 = 29,160) and *re-derives
+it*: a verifier re-checks disjointness, completeness and convergence from
+the live buffers on every build, and renders the verdict under the timeline.
 
 The instruments::
 Under each pane, a live readout of the actual render algebra — the Sculptor's
-frame is `draw(marble[0…N−k]) ∪ draw(tree[ALL])` (the tree term present and
-occluded from frame 0), the Gardener's is `draw(tree[0…k])` with no other
+frame is `draw(marble[0…N−k]) ∪ draw(form[ALL])` (the form term present and
+occluded from frame 0), the Gardener's is `draw(form[0…k])` with no other
 term. Engine-reported triangle counts fall on one side and rise on the other;
 an operation tape streams each addressed stroke and voxel. Sceptics get
-read-only live counts at `window.llmProof` in the console.
+read-only live counts at `window.llmProof` in the console, and
+`llmProof.verify()` re-runs the invariant checks on demand.
 
 == Why it exists
 

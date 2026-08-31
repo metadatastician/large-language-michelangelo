@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+#
+# STATE.a2ml — where this project actually is.
+# Read together with descriptiles/META.a2ml (decisions) and ROADMAP.adoc.
+
+[metadata]
+version = "0.3.0"
+last-updated = "2026-08-31"
+
+[project-context]
+name = "The Sculptor and the Gardener (large-language-michelangelo)"
+purpose = "Interactive demonstration that generation-by-removal and generation-by-addition are the same act read in opposite directions; instruments report the engine, not the script."
+origin = "A challenge prompt ('generate an image by removing only') that ~10 LLMs called mathematically impossible; this page is the verdict that they were wrong about the mathematics."
+
+[roadmap]
+shipped = ["0 housekeeping/RSR", "1 maths-in-motion instruments", "2 many forms one machinery"]
+next = "3 prompt-driven forms (form compiler) — uncommissioned"
+research = "4 addressable-revision experiment, error taxonomy, diffusion pane — uncommissioned"
+proofs-live = ["P-1 disjointness", "P-2 completeness", "P-3 convergence"]
+proofs-todo = ["P-4 interleaving equivalence", "P-5 compiled-form admissibility", "P-6 monotonicity", "P-7 determinism by construction"]
+
+[component-status]
+page = { percent = 100, notes = "index.html: five forms, verifier, instruments, reduced-motion parking; single pinned dependency (three.js 0.160.0 cdnjs UMD)" }
+ci = { percent = 100, notes = "5 gates (SPDX split, dependency pin, artifact shape, action SHA pins, placeholders) — green on main" }
+pages = { percent = 100, notes = "hand-packed github-pages tarball (org pins actions transitively); deployed green" }
+artifact = { percent = 100, notes = "published at claude.ai/code/artifact/38d095d3-4957-415c-9ac0-4ff2d3ad2773; same source file, host supplies doctype" }
+governance = { percent = 100, notes = "CoC/SECURITY/GOVERNANCE/MAINTAINERS/DCO; two-plane licence enforced line-1 by CI" }
+formal-proofs = { percent = 0, notes = "runtime verifier only; mechanised P-4..P-7 not started (deliberate — see rsr-profile notes)" }
+
+[settled-questions]
+resolved = [
+  { question = "Is 'per demptionem' correct Latin for the subtractive pathway?", answer = "It is grammatical but uncoined — demptio is attested (Varro, removal of letters) yet the phrase is not an established term of art. Replaced with Michelangelo's own 'per forza di levare' / 'per via di porre' (1549 letter to Benedetto Varchi).", evidence = "owner's own search found nothing; D-08 in META.a2ml" },
+  { question = "Can one committed file serve both the Artifact host and GitHub Pages?", answer = "Yes: commit the artifact-shaped file (no doctype); pages.yml prepends the doctype at assemble time; ci.yml gates the shape.", evidence = "D-01; pages run green" },
+  { question = "Why is the letterform a hand-authored bitmap?", answer = "Canvas text metrics vary per OS/browser and would silently break same-seed-same-voxels.", evidence = "D-09" },
+  { question = "Is the licence pairing MPL-2.0 + CC-BY-SA-4.0 sound?", answer = "Yes — two planes (code vs prose), both share-alike; established estate practice (f117a humans.txt declares the same pattern).", evidence = "CI SPDX gates green" },
+]
+
+[open-decisions]
+pending = [
+  { decision = "Commission roadmap 3 (prompt-driven forms) and/or 4 (research programme)", owner = "hyperpolymath", context = "explicitly parked by owner; proofs P-4/P-5 become load-bearing when 3 starts" },
+  { decision = "Mechanisation target for P-4..P-7 (Idris2 vs Lean)", owner = "hyperpolymath", context = "estate has both; Idris2 build-blocker classes are documented estate-wide" },
+]
+
+[route-to-next]
+steps = [
+  "If 3 is commissioned: define the form-spec interchange (cells+colours+growthKey) as a schema, then the picker+params compiler first",
+  "P-4 first among proofs: finite-set interleaving equivalence is small and unlocks the others' framing",
+  "Diffusion pane (4) reuses the pane scaffolding; needs a DDIM trajectory baked to a deterministic buffer",
+]

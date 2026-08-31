@@ -2,40 +2,49 @@
 = Roadmap
 :toc:
 
-Planned, not scheduled. v0 (shipped 2026-08-31) is the tree demonstrator:
-one deterministic voxel form, carved and grown on one timeline.
+Planned, not scheduled. v0.1–v0.3 (all shipped 2026-08-31) are the
+demonstrator: deterministic voxel forms, carved and grown on one timeline,
+with instruments that report the engine rather than the script.
 
-== 0 · Housekeeping
+== 0 · Housekeeping — SHIPPED 2026-08-31
 
-* RSR scaffold (manual — do not run the initialiser; known non-interactive
-  hang). CODE_OF_CONDUCT, SECURITY, GOVERNANCE, `.machine_readable/`.
-* CI: lint HTML, verify the SPDX line-1 header, pin check on the Three.js URL.
+RSR scaffold (manual; the initialiser has a known non-interactive hang):
+CODE_OF_CONDUCT, SECURITY, GOVERNANCE, MAINTAINERS, `.machine_readable/`,
+two-plane licensing (MPL-2.0 code / CC-BY-SA-4.0 prose) enforced on line 1
+of every file by CI, single-dependency pin gate, artifact-shape gate,
+SHA-pin gate, hand-packed Pages deploy (org pins actions transitively, so
+`upload-pages-artifact` is unusable; recipe inherited from f117a).
 
 == 1 · The maths in motion (honesty instrumentation) — SHIPPED 2026-08-31
 
 A live readout beside each pane showing the *actual* variables that drive the
 render, so the construction difference is evidence, not narration:
 
-* Sculptor: `wasteMesh.count = 26,521 − k` ticking *down*; the tree mesh
-  shown as `always 2,639 — occluded`.
+* Sculptor: `wasteMesh.count = N − k` ticking *down*; the form mesh shown as
+  `always Nt — occluded`.
 * Gardener: `gardenMesh.count = k` ticking *up* from zero.
 * Per-pane `renderer.info.render.triangles` — engine-reported, not scripted:
   the left number falls, the right number rises, and they meet.
-* A scrolling operation tape: `remove #12,004 @ (x,y,z)` / `add #1,833 @ …`,
-  append-only on both sides.
+* A scrolling operation tape: `− stroke №12,004 @ (x,y,z)` / `+ voxel №1,833
+  @ …`, append-only on both sides.
 
-== 2 · Many forms, one machinery
+== 2 · Many forms, one machinery — SHIPPED 2026-08-31
 
-The carve side is already form-agnostic (BFS distance from any target set
-orders the waste). Only the generator and the growth story are tree-specific.
+The carve side was already form-agnostic (BFS distance from any target set
+orders the waste); the generator is now form-agnostic too:
 
-* Extract a generator interface: `{voxels, colours, growthKey}`.
-* Picker of parametric families: tree, torus knot, letterform, chess piece,
-  standing figure, castle (SDF composition).
-* Generic growth fallback for forms without a natural skeleton:
-  seed-point geodesic or bottom-up sweep.
+* `FORMS` registry — each form contributes only `fill(seed, rnd, noise,
+  type, col, gkey)`: its own cells, colours, and growth key. Marble, carve
+  ordering, count-scrub, instruments and verifier are shared.
+* Shipped forms: tree (branch skeleton), torus knot (seed-picked (p,q),
+  growth key threads the curve), letter M (hand-authored bitmap — canvas
+  text metrics differ per OS and would break same-seed-same-voxels),
+  chess rook (lathe profile, growth key spirals like a lathe pass),
+  castle (keep/towers/walls, growth key = masonry courses).
+* Per-form colour bootstrap: 1-bit threshold and 4-colour palette are
+  luminance quartiles of the chosen form's finished colouring.
 
-== 3 · Prompt-driven forms
+== 3 · Prompt-driven forms — NEXT, uncommissioned
 
 The two pathways can only consume a *fixed form specification* — the
 invariant requires the form to exist before either pathway starts. So a
@@ -57,7 +66,15 @@ prompt pipeline is a **form compiler** in front of unchanged machinery.
   fetches and the 16 MB budget excludes useful models. Local repo mode has
   no such sandbox — ONNX/WebGPU SLMs are viable there, not in the artifact.
 
-== 4 · The research programme (the point of all this)
+*Proof obligations attached to this item:* P-5 is the gate — a compiled form
+is admissible only if it arrives with a checkable partition witness, so the
+compiler can be wrong about likeness but never about the invariant. P-4
+(interleaving equivalence) becomes load-bearing here too: compiled scenes
+will want layered/streamed construction orders, and the claim that any
+interleaving of the two op streams reaches the same final frame must be
+proved, not assumed.
+
+== 4 · The research programme (the point of all this) — uncommissioned
 
 * *Addressable revision experiment:* "remove stroke-group N" vs chat-loop
   image revision — measure whether procedural addressability eliminates the
@@ -68,3 +85,40 @@ prompt pipeline is a **form compiler** in front of unchanged machinery.
   which suit construction-from-seed; can the two co-evolve as skills?
 * *Diffusion tie-in:* a third pane replaying a deterministic (DDIM) denoising
   trajectory — the sculptor that industry already ships without saying so.
+
+*Proof obligations attached to this item:* the experiment is only meaningful
+over machinery whose invariants are mechanised (P-6), and the diffusion pane
+inherits P-7 — the claim "deterministic sampler ⇒ the noise block uniquely
+determines the image" must be stated precisely (ODE-flow uniqueness under
+Lipschitz conditions) rather than gestured at.
+
+== P · Proof obligations
+
+The page's claims, split into what is *checked live* on every build and what
+remains *to be done* as mechanised proof. Runtime checking is not proof and
+is not claimed as such (see `rsr-profile.a2ml`).
+
+.Checked live, in-page (`llmProof.verify()`, verdict line under the timeline)
+* *P-1 Disjointness* — the removal stream and the addition stream share no
+  cell, and neither stream repeats a cell.
+* *P-2 Completeness* — every cell of the block appears in exactly one
+  stream: `Nt + Nw = NCELL`, re-counted from the live buffers.
+* *P-3 Convergence* — the addition stream is exactly the typed form; the
+  removal stream is exactly the untyped waste. Hence final-frame equality of
+  the two panes: what the Sculptor never removes ≡ what the Gardener adds.
+
+.To be done (mechanised, target Idris2 or Lean; roadmap only, no code yet)
+* *P-4 Interleaving equivalence* — for any monotone interleaving of the two
+  op streams, the final frame is invariant; the timeline's `k(t)` is one
+  path through a lattice whose sinks all agree. (Finite-set statement:
+  `block ∖ removeAll = addAll` independent of order.)
+* *P-5 Compiled-form admissibility* — a form compiler (roadmap §3) must emit
+  a witness that its output is a partition of the block; the checker, not
+  the compiler, is trusted.
+* *P-6 Monotonicity* — the Sculptor's drawn-count is non-increasing and the
+  Gardener's non-decreasing along the timeline; scrubbing backwards is
+  re-selection, not un-removal, and the formal statement should say so.
+* *P-7 Determinism of the definition* — `generateSpecimen : Seed → Form →
+  Spec` is a function (no ambient state); currently evidenced by
+  byte-identical regeneration under test, to be proved by construction over
+  a pure PRNG.
