@@ -71,6 +71,22 @@
   #panel-s .live{ color:var(--stone); font-weight:500; }
   #panel-g .live{ color:var(--leaf); font-weight:500; }
 
+  /* ---------- maths in motion ---------- */
+  .mathbox{
+    font-family:'IBM Plex Mono', monospace; font-size:.72rem; line-height:1.55;
+    font-variant-numeric:tabular-nums; color:var(--muted);
+    border-top:1px dashed var(--line); padding:10px 18px 12px;
+  }
+  #panel-s .mathbox{ box-shadow:inset 3px 0 0 var(--stone); }
+  #panel-g .mathbox{ box-shadow:inset 3px 0 0 var(--leaf); }
+  .mathbox .formula{ margin:0 0 8px; color:var(--ink); letter-spacing:.02em; }
+  #panel-s .formula .hot{ color:var(--stone); font-weight:500; }
+  #panel-g .formula .hot{ color:var(--leaf); font-weight:500; }
+  .mathbox .mrow{ margin:2px 0; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .mathbox .mval{ color:var(--ink); }
+  .mathbox .optape{ margin:8px 0 0; color:var(--ink); min-height:1.5em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
   /* ---------- controls ---------- */
   .controls{
     display:flex; align-items:center; gap:12px; flex-wrap:wrap;
@@ -109,6 +125,19 @@
   .explainer p + p{ margin-top:8px; }
   .explainer .aside{ color:var(--muted); font-size:.88rem; }
 
+  /* ---------- not-a-trick ---------- */
+  .honesty{ max-width:52em; margin:52px auto 0; border-top:1px solid var(--line); padding-top:26px; }
+  .honesty h3{
+    font-family:'IBM Plex Mono', monospace; font-weight:500; font-size:.74rem;
+    letter-spacing:.24em; text-transform:uppercase; color:var(--bark); margin:0 0 14px;
+  }
+  .honesty p{ margin:0 0 12px; font-size:.95rem; }
+  .honesty code{
+    font-family:'IBM Plex Mono', monospace; font-size:.85em;
+    background:color-mix(in oklab, var(--ink) 7%, transparent);
+    padding:.08em .35em; border-radius:3px;
+  }
+
   .colophon{
     text-align:center; margin-top:52px; font-family:'IBM Plex Mono', monospace;
     font-size:.72rem; letter-spacing:.08em; color:var(--muted);
@@ -133,6 +162,13 @@
         </header>
         <div class="stage"><canvas id="cv-s" aria-label="A marble block being chiseled away to reveal a tree"></canvas></div>
         <footer class="ledger"><span><span class="live" id="led-s">0</span> removals</span><span class="zero">0 additions</span></footer>
+        <div class="mathbox" aria-label="Live render mathematics, Sculptor">
+          <p class="formula">frame(t) = draw( marble[ 0 &hellip; N&minus;k ] ) &cup; draw( <span class="hot">tree[ ALL ]</span> )</p>
+          <p class="mrow"><span>marble instances drawn</span> <span class="mval" id="mb-s-waste">&mdash;</span></p>
+          <p class="mrow"><span>tree instances drawn</span> <span class="mval" id="mb-s-tree">&mdash;</span></p>
+          <p class="mrow"><span>triangles this frame <span aria-hidden="true">&#9660;</span></span> <span class="mval" id="mb-s-tri">&mdash;</span></p>
+          <p class="optape" id="tape-s">awaiting the first stroke</p>
+        </div>
       </article>
       <article class="panel" id="panel-g">
         <header>
@@ -141,6 +177,13 @@
         </header>
         <div class="stage"><canvas id="cv-g" aria-label="A tree growing voxel by voxel from a bare field"></canvas></div>
         <footer class="ledger"><span class="zero">0 removals</span><span><span class="live" id="led-g">0</span> additions</span></footer>
+        <div class="mathbox" aria-label="Live render mathematics, Gardener">
+          <p class="formula">frame(t) = draw( <span class="hot">tree[ 0 &hellip; k ]</span> ) &nbsp;&mdash; and no other term</p>
+          <p class="mrow"><span>tree instances drawn</span> <span class="mval" id="mb-g-tree">&mdash;</span></p>
+          <p class="mrow"><span>hidden meshes in scene</span> <span class="mval">0 &mdash; nothing to unmask</span></p>
+          <p class="mrow"><span>triangles this frame <span aria-hidden="true">&#9650;</span></span> <span class="mval" id="mb-g-tri">&mdash;</span></p>
+          <p class="optape" id="tape-g">awaiting the first voxel</p>
+        </div>
       </article>
     </section>
 
@@ -170,6 +213,14 @@
         <p>Both panels consume the same seeded tree definition. Their final frames are the identical set of voxels; only the order of operations differs.</p>
         <p class="aside">Two metaphysics &mdash; selection from abundance, construction from seed &mdash; provably converging on one form. Drag the timeline to hold both mid-thought.</p>
       </div>
+    </section>
+
+    <section class="honesty" aria-label="Why this is not a visual trick">
+      <h3>Not a trick &mdash; read the instruments</h3>
+      <p>A fair suspicion: is the Gardener really building, or is a finished picture being revealed &mdash; a mask, a transparency, a background that never looked like what it was? The instrument panels under each scene answer with the engine&rsquo;s own numbers, not our captions. Every frame is rendered from scratch. The Gardener&rsquo;s scene contains a single mesh, and the GPU is instructed to draw exactly <code>k</code> instances of it &mdash; at t&nbsp;=&nbsp;0, <code>k&nbsp;=&nbsp;0</code>, so no tree geometry enters the pipeline at all. There is nothing behind the ground to unmask; addition is the integer <code>k</code> rising. The triangle counter is reported by the renderer itself (<code>renderer.info</code>) and climbs with every voxel &mdash; a reveal would hold it flat.</p>
+      <p>The Sculptor is openly the opposite, and its formula says so: it contains <code>tree[ALL]</code> from the first frame. The complete tree is always drawn, genuinely hidden behind opaque, genuinely-drawn marble &mdash; which is precisely Michelangelo&rsquo;s claim. X-ray never adds the tree; it only thins the marble. And the Gardener&rsquo;s colour bootstrap (one bit &rarr; greys &rarr; four colours &rarr; full colour) recolours voxels already added; it never adds geometry.</p>
+      <p>What does exist beforehand &mdash; honestly &mdash; is the <em>description</em>: the ordered list of cells, computed the moment the seed is drawn, because both sides are required to converge on the same tree. The prior always lives somewhere. The Sculptor keeps it in the block; the Gardener keeps it in the rulebook. Neither creates from nothing; the claim is that these are two orders of one act, not that either is magic.</p>
+      <p>And this is not how machine image generation normally works. A diffusion model starts from a block of noise and denoises &mdash; with a deterministic sampler the noise already fixes the image, making ordinary generation a sculptor that never shows you its marble. A chat loop asked to &ldquo;revise&rdquo; an image re-samples near the same basin, which is why revisions come back strangely unchanged. Here every operation has an address &mdash; stroke &#8470;12,004, voxel &#8470;1,833 &mdash; so a revision is a checkable edit to a list, not a plea to a prior. Sceptics: open the developer console; <code>window.llmProof</code> exposes the live counts, read-only.</p>
     </section>
   </main>
 
@@ -481,6 +532,7 @@
     paneS.scene.add(chipMesh);
 
     if(xray) applyXray(true);
+    mbSt.textContent=Nt.toLocaleString('en-GB')+' — always, occluded';
     document.getElementById('seed-no').textContent=String(seed);
     document.getElementById('invariant').textContent =
       'One tree · '+Nt.toLocaleString('en-GB')+' voxels — carved free of a '+
@@ -552,6 +604,22 @@
   var scrub=document.getElementById('scrub'), tval=document.getElementById('tval');
   var btnPlay=document.getElementById('btn-play');
 
+  // ---------- maths-in-motion instruments ----------
+  var mbSw=document.getElementById('mb-s-waste'), mbSt=document.getElementById('mb-s-tree'),
+      mbStri=document.getElementById('mb-s-tri'), tapeS=document.getElementById('tape-s'),
+      mbGt=document.getElementById('mb-g-tree'), mbGtri=document.getElementById('mb-g-tri'),
+      tapeG=document.getElementById('tape-g');
+  var triS=0, triG=0, triShown=0;
+  function fmt(n){ return n.toLocaleString('en-GB'); }
+  function cellStr(ci){ return '('+cellX(ci)+', '+cellY(ci)+', '+cellZ(ci)+')'; }
+  // read-only live counts for sceptics (see the "Not a trick" section)
+  window.llmProof = {
+    get sculptor(){ return { marbleInstancesDrawn:wasteMesh.count, treeInstancesDrawn:treeMeshS.count,
+      removalsApplied:kS, trianglesLastFrame:triS }; },
+    get gardener(){ return { treeInstancesDrawn:gardenMesh.count, additionsApplied:kG,
+      hiddenMeshesInScene:0, trianglesLastFrame:triG }; }
+  };
+
   buildSpecimen(7);
 
   function setCounts(force){
@@ -566,8 +634,18 @@
       wasteMesh.count=Nw-kS;
       rubbleMesh.count=Math.min(Math.floor(kS/6), rubbleMax);
       ledS.textContent=kS.toLocaleString('en-GB');
+      mbSw.textContent=fmt(Nw)+' − '+fmt(kS)+' = '+fmt(Nw-kS);
+      tapeS.textContent = kS>0
+        ? '− stroke №'+fmt(kS)+' · cell '+cellStr(spec.removeOrder[kS-1])
+        : 'awaiting the first stroke';
     }
-    if(nkG!==kG || force){ kG=nkG; gardenMesh.count=kG; ledG.textContent=kG.toLocaleString('en-GB'); }
+    if(nkG!==kG || force){
+      kG=nkG; gardenMesh.count=kG; ledG.textContent=kG.toLocaleString('en-GB');
+      mbGt.textContent=fmt(kG)+' of '+fmt(Nt);
+      tapeG.textContent = kG>0
+        ? '+ voxel №'+fmt(kG)+' · cell '+cellStr(spec.treeOrder[kG-1])
+        : 'awaiting the first voxel';
+    }
     var st=stageFor(t);
     if(st!==gStage){ gStage=st; applyStage(st); }
     if(!scrubbing) scrub.value=String(t);
@@ -659,6 +737,13 @@
       p.camera.lookAt(0,cy,0);
       p.renderer.render(p.scene, p.camera);
     });
+    triS=paneS.renderer.info.render.triangles;
+    triG=paneG.renderer.info.render.triangles;
+    if(now-triShown>250){
+      triShown=now;
+      mbStri.textContent=fmt(triS);
+      mbGtri.textContent=fmt(triG);
+    }
     requestAnimationFrame(frame);
   }
   setCounts(true);

@@ -11,7 +11,7 @@ one deterministic voxel form, carved and grown on one timeline.
   hang). CODE_OF_CONDUCT, SECURITY, GOVERNANCE, `.machine_readable/`.
 * CI: lint HTML, verify the SPDX line-1 header, pin check on the Three.js URL.
 
-== 1 · The maths in motion (honesty instrumentation)
+== 1 · The maths in motion (honesty instrumentation) — SHIPPED 2026-08-31
 
 A live readout beside each pane showing the *actual* variables that drive the
 render, so the construction difference is evidence, not narration:

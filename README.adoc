@@ -36,6 +36,14 @@ Both panes consume the identical voxel set. Their final frames are the same
 tree; only the temporal order of operations differs. The page states the
 arithmetic: tree voxels + removals = block (2,639 + 26,521 = 29,160).
 
+The instruments::
+Under each pane, a live readout of the actual render algebra — the Sculptor's
+frame is `draw(marble[0…N−k]) ∪ draw(tree[ALL])` (the tree term present and
+occluded from frame 0), the Gardener's is `draw(tree[0…k])` with no other
+term. Engine-reported triangle counts fall on one side and rise on the other;
+an operation tape streams each addressed stroke and voxel. Sceptics get
+read-only live counts at `window.llmProof` in the console.
+
 == Why it exists
 
 The project began as a challenge prompt — "you are the Michelangelo of LLMs;
