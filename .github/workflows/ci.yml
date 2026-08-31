@@ -1,0 +1,101 @@
+# SPDX-License-Identifier: MPL-2.0
+#
+# The real gate for large-language-michelangelo. Every step here can fail;
+# none is annotate-only — a check that cannot fail is worse than no check,
+# because it reads as coverage.
+#
+# Every `uses:` is pinned to a full commit SHA: the org enforces
+# sha_pinning_required, and a tag ref produces startup_failure at 0s — which
+# reports as NO check rather than a red one.
+#
+# Code scanning is NOT here: it runs via GitHub code-scanning default setup.
+# An advanced codeql.yml would conflict with default setup and fail
+# permanently.
+
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: structural gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The licence split is two planes: MPL-2.0 on code (index.html, the
+      # workflows, .a2ml metadata), CC-BY-SA-4.0 on prose (.adoc, .md).
+      - name: SPDX split — MPL-2.0 code, CC-BY-SA-4.0 prose
+        run: |
+          set -euo pipefail
+          fail=0
+          [ "$(head -1 index.html)" = "<!-- SPDX-License-Identifier: MPL-2.0 -->" ] \
+            || { echo "::error file=index.html::line 1 must be the MPL-2.0 SPDX comment"; fail=1; }
+          while IFS= read -r f; do
+            [ "$(head -1 "$f")" = "// SPDX-License-Identifier: CC-BY-SA-4.0" ] \
+              || { echo "::error file=$f::missing CC-BY-SA-4.0 SPDX header"; fail=1; }
+          done < <(find . -name '*.adoc' -not -path './.git/*')
+          while IFS= read -r f; do
+            [ "$(head -1 "$f")" = "<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->" ] \
+              || { echo "::error file=$f::missing CC-BY-SA-4.0 SPDX comment"; fail=1; }
+          done < <(find . -name '*.md' -not -path './.git/*')
+          while IFS= read -r f; do
+            [ "$(head -1 "$f")" = "# SPDX-License-Identifier: MPL-2.0" ] \
+              || { echo "::error file=$f::missing MPL-2.0 SPDX header"; fail=1; }
+          done < <(find .github/workflows -name '*.yml')
+          while IFS= read -r f; do
+            head -3 "$f" | grep -q 'SPDX-License-Identifier:' \
+              || { echo "::error file=$f::missing SPDX identifier"; fail=1; }
+          done < <(find . -name '*.a2ml' -not -path './.git/*')
+          [ "$fail" = 0 ]
+
+      - name: Exactly one external script, and it is Three.js 0.160.0 pinned
+        run: |
+          set -euo pipefail
+          n="$(grep -c '<script src=' index.html)"
+          [ "$n" = 1 ] || { echo "::error::expected exactly 1 external script tag, found $n"; exit 1; }
+          grep -q 'src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"' index.html \
+            || { echo "::error::the external script is not the pinned Three.js 0.160.0 cdnjs UMD build"; exit 1; }
+          echo "three.js pin intact"
+
+      # The committed page is Artifact-shaped: the Claude Artifact host
+      # supplies the document skeleton, and pages.yml prepends the doctype for
+      # GitHub Pages. A committed doctype would double up on the artifact.
+      - name: index.html stays Artifact-shaped (no doctype of its own)
+        run: |
+          set -euo pipefail
+          if grep -qi '<!doctype' index.html; then
+            echo "::error file=index.html::committed page must not carry a doctype; pages.yml prepends it at assemble time"
+            exit 1
+          fi
+          echo "artifact-shaped"
+
+      - name: Every action is pinned to a full commit SHA
+        run: |
+          set -euo pipefail
+          if grep -rhoE 'uses: *[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[^ ]+' .github/workflows/ \
+             | grep -vE '@[0-9a-f]{40}$'; then
+            echo "::error::the above action refs are not pinned to a 40-character commit SHA"
+            exit 1
+          fi
+          echo "all action refs are SHA-pinned"
+
+      - name: No unsubstituted template placeholders
+        run: |
+          set -euo pipefail
+          if grep -rlE '[{]{2}[A-Z][A-Z0-9_]*[}]{2}' --exclude-dir=.git . ; then
+            echo "::error::the files above still contain template placeholders"
+            exit 1
+          fi
+          echo "no template placeholders remain"

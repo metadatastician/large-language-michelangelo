@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+cff-version: 1.2.0
+message: "If you use or cite this demonstration, please cite it as below."
+title: "The Sculptor and the Gardener"
+type: software
+authors:
+  - family-names: Jewell
+    given-names: Jonathan D.A.
+    alias: hyperpolymath
+license: MPL-2.0
+repository-code: "https://github.com/metadatastician/large-language-michelangelo"
+url: "https://metadatastician.github.io/large-language-michelangelo/"
+abstract: >-
+  One form, two metaphysics: an interactive demonstration that
+  generation-by-removal and generation-by-addition are the same act read in
+  opposite directions. A deterministic voxel form is carved out of a solid
+  block and grown from bare ground on one shared timeline, with live
+  instruments reporting the actual render algebra rather than a scripted
+  narration.
+keywords:
+  - generative-models
+  - subtractive-generation
+  - selection-from-prior
+  - voxels
+  - threejs
+version: 0.2.0
+date-released: "2026-08-31"

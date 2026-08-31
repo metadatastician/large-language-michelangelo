@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MPL-2.0
+# ai.txt - AI interaction policy
+# See: https://site.spawning.ai/spawning-ai-txt
+
+User-Agent: *
+Disallow-Training: yes
+Disallow-Summarization: no
+Disallow-Generation: yes
+
+# Code is MPL-2.0; prose is CC-BY-SA-4.0. AI agents may read and analyse this
+# repository to assist contributors. Do not use it for model training without
+# explicit consent.
+#
+# For agents making changes, the two constraints most likely to be violated
+# while trying to be helpful:
+#   * Both panes must consume the SAME deterministic voxel definition
+#     (generateSpecimen). Any change that lets the Sculptor and the Gardener
+#     drift apart destroys the invariant the page exists to demonstrate.
+#   * The instruments report engine state (InstancedMesh.count,
+#     renderer.info.render.triangles), never scripted numbers. Do not "fix" a
+#     readout by writing the number you expect into it.

@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+#
+# META.a2ml — Project meta-level information
+# Architecture decisions, development practices, design rationale.
+
+[metadata]
+version = "0.1.0"
+last-updated = "2026-08-31"
+
+[project-info]
+name = "The Sculptor and the Gardener"
+type = "interactive-demonstration"   # one browser page, two synced 3-D panes
+languages = ["javascript"]
+license = "MPL-2.0"                  # all code, including index.html
+license-docs = "CC-BY-SA-4.0"        # README, ROADMAP, governance prose
+author = "Jonathan D.A. Jewell (hyperpolymath)"
+repository = "https://github.com/metadatastician/large-language-michelangelo"
+homepage = "https://metadatastician.github.io/large-language-michelangelo/"
+artifact = "https://claude.ai/code/artifact/38d095d3-4957-415c-9ac0-4ff2d3ad2773"
+
+[architecture-decisions]
+# status = accepted | rejected | superseded
+records = [
+  { id = "D-01", title = "One self-contained Artifact-shaped HTML file", status = "accepted", notes = "index.html carries no doctype/html/head/body — the Claude Artifact host wraps it at publish time. GitHub Pages gets the doctype prepended by pages.yml at assemble time, so ONE committed source serves both venues; ci.yml gates the shape." },
+  { id = "D-02", title = "Three.js 0.160.0 UMD from cdnjs, pinned exactly", status = "accepted", notes = "r160 is the last release line shipping a UMD build, and cdnjs is an Artifact-CSP-allowed script host. ci.yml asserts the page has exactly one external script and that it is this one." },
+  { id = "D-03", title = "Scrubbing is two InstancedMesh.count integer assignments", status = "accepted", notes = "Waste voxels are stored in REVERSE removal order so the remaining marble is always a prefix; form voxels in growth order. Bidirectional scrub costs two integer writes per frame. Never rewrite instance matrices to scrub." },
+  { id = "D-04", title = "The definition precedes both pathways", status = "accepted", notes = "generateSpecimen(seed) is fully deterministic (mulberry32; no Date, no Math.random in the build path). Both panes consume the identical voxel set; only the temporal order of operations differs. This IS the thesis; a change that lets the panes drift kills the page." },
+  { id = "D-05", title = "Instruments report engine state, never scripted numbers", status = "accepted", notes = "Ledgers read InstancedMesh.count; triangle counts read renderer.info.render.triangles; the in-page verifier re-derives partition/disjointness/completeness/convergence from the live buffers on every build. A readout that displays what the script expects rather than what the engine did is the failure mode the page exists to refute." },
+  { id = "D-06", title = "prefers-reduced-motion parks at t=0.62, paused", status = "accepted", notes = "A static mid-carve frame shows both metaphysics at once without motion. Headless checks see a 'frozen' page — that is the design, not a bug. Form switches under reduced motion re-park at 0.62 rather than t=0, which would show an empty Gardener." },
+  { id = "D-07", title = "Pages artifact is packed by hand", status = "accepted", notes = "The org pins actions transitively; actions/upload-pages-artifact calls upload-artifact@v4 by tag and dies at startup_failure. pages.yml builds the github-pages tarball inline. Recipe inherited from f117a-stealth-glider, where it is proven green." },
+  { id = "D-08", title = "Pane epigraphs use Michelangelo's own Italian", status = "accepted", notes = "'Per forza di levare' / 'per via di porre', from his 1549 letter to Benedetto Varchi. Replaces the coinage 'per demptionem' — demptio is attested (Varro uses it for the removal of letters) but the phrase is not an established term, and a page about honesty cannot afford a caption that fails a search." },
+  { id = "D-09", title = "Letterform glyphs are hand-authored bitmaps, not canvas-rasterised text", status = "accepted", notes = "Canvas text metrics vary by OS and browser, so the same seed would produce DIFFERENT voxel sets on different machines — silently breaking the deterministic-definition claim that is the page's spine. Embedded bitmaps keep specimen №N identical everywhere." },
+]
+
+[development-practices]
+build-tool = "none"                  # one committed HTML file; nothing to build
+ci-platform = "github-actions"       # .github/workflows/{ci,pages}.yml
+package-managers = []                # zero installed dependencies
+code-scanning = "github code-scanning default setup"
+contribution = "DCO 1.1 — sign commits with `git commit -s`"
+verification = "window.llmProof.verify() re-derives the invariant from live buffers on every build and renders the verdict on the page; CI gates are structural (SPDX split, dependency pin, artifact shape, action pinning, placeholder sweep)."
+
+[design-rationale]
+generation-is-selection = "The page's verdict on the 'Michelangelo of LLMs' prompt: deterministic diffusion sampling means the noise block uniquely determines the image (the statue is already in the marble); autoregression is monotone subtraction in possibility-space (every token discards futures); additive-from-nothing is the one picture nothing implements, because a prior always exists somewhere. The Gardener relocates the prior into rules+seed; the Sculptor leaves it in the block. Neither creates ex nihilo."
+two-pathways-cross-check = "Two pathways that provably converge give a cross-check a single pathway cannot: carve order and growth order are independent witnesses to the same form. The research programme behind the toy is addressable revision — procedural pathways make errors diffable and revisions verifiable, where chat-loop image revision is basin-anchored."
+honesty-is-load-bearing = "Every number on the page is either engine-reported or re-derivable in the console. The 'Not a trick' section names exactly how the effect is achieved (count scrubbing over pre-sorted buffers) rather than letting the reader suspect a crossfade."

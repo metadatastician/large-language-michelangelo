@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 = large-language-michelangelo
 :toc: preamble
 :experimental:
@@ -76,4 +76,12 @@ mid-carve frame.
 
 == Licence
 
-MPL-2.0. See `LICENSE`.
+Two planes, enforced by CI on line 1 of every file:
+
+* *Code* — `index.html`, the workflows, `.a2ml` metadata: MPL-2.0.
+* *Prose* — the `.adoc` and `.md` documents: CC-BY-SA-4.0.
+
+Full texts are vendored in `LICENSES/`; `LICENSE` at the root carries the
+MPL-2.0 text for the code plane. Improvements, forks and remixes are the
+point — both licences are share-alike, so keep what you build open the same
+way.

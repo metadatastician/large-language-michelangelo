@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Maintainers — large-language-michelangelo
+
+This file lists the current maintainers. Governance process lives in
+link:GOVERNANCE.md[GOVERNANCE.md].
+
+== Active maintainers
+
+[cols="2,2,1,2", options="header"]
+|===
+| Name | GitHub | Role | Since
+
+| Jonathan D.A. Jewell
+| @hyperpolymath (org: @metadatastician)
+| Primary
+| 2026-08-31 (project start)
+|===
+
+This is a single-maintainer project. The table is not aspirational scaffolding
+for a team that does not exist — if it gains a second row, the decision-making
+sections of `GOVERNANCE.md` need rewriting at the same time.
+
+== Areas of responsibility
+
+Because there is one maintainer, ownership is not divided by area. What *is*
+divided is the level of scrutiny a change receives:
+
+[cols="2,3", options="header"]
+|===
+| Area | Review standard
+
+| `index.html` — the generator (`generateSpecimen`) and orderings
+| Highest. Both panes must consume the identical deterministic voxel set; any
+  change that lets the Sculptor and the Gardener drift apart destroys the
+  invariant the page exists to demonstrate. The in-page verifier must stay
+  green.
+
+| `index.html` — the instruments (ledgers, triangle counts, operation tapes)
+| Highest. Instruments report engine state (`InstancedMesh.count`,
+  `renderer.info.render.triangles`), never scripted numbers. A readout that
+  shows what the script expects rather than what the engine did is the exact
+  failure mode the page exists to refute.
+
+| `index.html` — presentation (CSS, copy, camera, chips)
+| Normal.
+
+| `.github/workflows/`
+| High. The org pins actions transitively; see the header comment in
+  `pages.yml` before touching any `uses:` line.
+
+| Docs, `.machine_readable/`
+| Normal.
+|===
+
+== Emeritus maintainers
+
+None.
+
+== Becoming a maintainer
+
+There is no formal ladder yet, which is the honest position for a project this
+size. In practice: contribute substantively, demonstrate that you understand
+why the invariant and the instruments exist rather than merely that they
+exist, and ask.
+
+== Contact
+
+* General: open an issue.
+* Security: see link:SECURITY.md[SECURITY.md]. Do not open a public issue.
+
+---
+
+_Last updated: 2026-08-31._

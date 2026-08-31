@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# rsr-profile.a2ml — this repo's declared RSR v2.0 capabilities.
+#
+# Declares which capabilities this repository actually HAS. The RSR v2.0
+# conformance oracle uses `capabilities` to compute the APPLICABLE criteria
+# set: a gated criterion is scored only when its gating capability appears
+# below; everything else is `na` and excluded from the denominator.
+#
+# large-language-michelangelo is deliberately MINIMAL: one self-contained
+# browser page whose only external dependency is a pinned Three.js UMD build.
+# Declaring capabilities it does not carry would score it against modules it
+# lacks — the over-scaffolding failure RSR v2.0 exists to fix.
+
+[rsr-profile]
+version = "1.0.0"
+spec = "rsr-criteria-v2"
+declares-against = "2.0.0-draft"
+capabilities = [
+  "web-ui",     # index.html — the demonstration is a browser page
+  "docs-site",  # .github/workflows/pages.yml publishes it to GitHub Pages
+]
+
+[notes]
+# Capabilities intentionally NOT declared (no corresponding code in tree):
+#   governance-tier       — CoC/SECURITY/GOVERNANCE/MAINTAINERS exist, but the
+#                           full AUDIT/AFFIRMATION set does not; claiming the
+#                           tier without them would be over-declaration.
+#   rust, zig, idris2, affinescript — the project is JavaScript in one file
+#   ffi, abi, container, reproducible-build, benchmarks, cli, library,
+#   api-service, published-package, bash — none present
+#   formal-proofs         — the page carries an in-page runtime verifier
+#                           (window.llmProof.verify()) that re-derives the
+#                           partition/disjointness/completeness/convergence
+#                           claims from live buffers. That is runtime checking,
+#                           not mechanised proof, and is not claimed as such;
+#                           the proof obligations proper are recorded in
+#                           ROADMAP.adoc.
+omitted-rationale = "Under-declaring is honest; over-declaring manufactures both false gaps and false credit."
+
+[deliberate-deviations]
+deviations = [
+  { item = "actions/upload-pages-artifact not used", reason = "It calls upload-artifact@v4 by tag internally; the org pins actions transitively. pages.yml packs the github-pages tarball by hand instead — recipe proven green on f117a-stealth-glider." },
+  { item = "index.html carries no doctype", reason = "The file is Artifact-shaped (the Claude Artifact host supplies the document skeleton); pages.yml prepends the doctype at assemble time and ci.yml enforces the shape." },
+  { item = "No advanced codeql.yml", reason = "GitHub code-scanning default setup covers the repo; an advanced workflow conflicts with it and fails permanently." },
+  { item = "No docs/adr/ tree", reason = "Decisions D-01..D-09 are recorded in descriptiles/META.a2ml with the evidence that settled each. Promote to docs/adr/ if the project grows." },
+]

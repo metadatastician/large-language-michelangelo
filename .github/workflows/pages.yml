@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: MPL-2.0
+#
+# Publish index.html to GitHub Pages.
+#
+# The page is one self-contained HTML file (a pinned Three.js UMD build from
+# cdnjs is its only external script), so the "site" is that file served as
+# index.html. Nothing to build; ci.yml verifies the committed file's shape.
+#
+# ── Why the doctype is prepended here ────────────────────────────────────────
+# index.html is Artifact-shaped: the Claude Artifact host wraps it in its own
+# <!doctype html>…<head>…</head><body> skeleton at publish time, so the
+# committed file must NOT carry a doctype of its own. Served raw, a
+# doctype-less page renders in quirks mode. The assemble step below prepends
+# `<!doctype html>` for Pages, keeping ONE committed source for both venues.
+# ci.yml asserts the committed file stays doctype-free.
+#
+# ── Why the artifact is packed by hand ───────────────────────────────────────
+# actions/upload-pages-artifact cannot be used in this organisation: it calls
+# actions/upload-artifact@v4 by TAG internally, and the org requires every
+# action — including transitive ones — to be pinned to a full-length commit
+# SHA. The run dies at startup with "The action actions/upload-artifact@v4 is
+# not allowed…", and startup_failure is the worst kind of red because it reads
+# as a check that never ran. So the tarball it would have built is packed
+# explicitly below and uploaded under the artifact name `github-pages` that
+# actions/deploy-pages expects. Every `uses:` here is SHA-pinned; no
+# transitive action calls remain. Recipe inherited from f117a-stealth-glider,
+# where it is proven green.
+
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel an in-flight deployment; let it finish and queue the next.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: assemble site
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Assemble the site from the committed page
+        run: |
+          set -euo pipefail
+          test -f index.html
+          mkdir -p _site
+          printf '<!doctype html>\n' > _site/index.html
+          cat index.html >> _site/index.html
+          mkdir -p _site/.well-known
+          cp .well-known/*.txt _site/.well-known/
+          # Bypass Jekyll — this is a plain static file, not a Jekyll source tree.
+          touch _site/.nojekyll
+          echo "site assembled ($(wc -c < _site/index.html) bytes)"
+
+      # Exactly what actions/upload-pages-artifact packs, done inline so no
+      # unpinned transitive action is involved. Deploy expects a single
+      # artifact.tar at the root of an artifact named `github-pages`.
+      - name: Pack the Pages artifact
+        run: |
+          set -euo pipefail
+          tar \
+            --dereference --hard-dereference \
+            --directory _site \
+            -cvf "${RUNNER_TEMP}/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            .
+          echo "packed $(wc -c < "${RUNNER_TEMP}/artifact.tar") bytes"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    name: deploy to github-pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MPL-2.0
+# humanstxt.org
+
+/* TEAM */
+Maintainer: Jonathan D.A. Jewell (hyperpolymath)
+Contact: https://github.com/metadatastician/large-language-michelangelo/issues
+From: United Kingdom
+
+/* SITE */
+Last update: 2026-08-31
+Standards: RSR (Rhodium Standard Repository), A2ML
+License: MPL-2.0 (code) / CC-BY-SA-4.0 (docs)
+Components: Three.js 0.160.0 (pinned UMD, cdnjs); everything else inline
+Language: JavaScript — one self-contained HTML file
+
+/* THANKS */
+Michelangelo Buonarroti: per forza di levare.
+The ten LLMs that declared it impossible: for the prompt.

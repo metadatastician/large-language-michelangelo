@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MPL-2.0
+# RFC 9116 - security.txt
+# https://securitytxt.org/
+
+# No Encryption: field. RFC 9116 §2.5.4 requires it to point at an actual key;
+# this estate signs with SSH (gpg.format=ssh) and publishes no PGP key, so the
+# field would have nothing to reference. Report via the Contact: URL below, or
+# through GitHub private vulnerability reporting on the repository's Security
+# tab.
+
+Contact: https://github.com/metadatastician/large-language-michelangelo/security/advisories/new
+Expires: 2027-08-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://metadatastician.github.io/large-language-michelangelo/.well-known/security.txt
+Policy: https://github.com/metadatastician/large-language-michelangelo/blob/main/SECURITY.md
