@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: MPL-2.0
+= Roadmap
+:toc:
+
+Planned, not scheduled. v0 (shipped 2026-08-31) is the tree demonstrator:
+one deterministic voxel form, carved and grown on one timeline.
+
+== 0 · Housekeeping
+
+* RSR scaffold (manual — do not run the initialiser; known non-interactive
+  hang). CODE_OF_CONDUCT, SECURITY, GOVERNANCE, `.machine_readable/`.
+* CI: lint HTML, verify the SPDX line-1 header, pin check on the Three.js URL.
+
+== 1 · The maths in motion (honesty instrumentation)
+
+A live readout beside each pane showing the *actual* variables that drive the
+render, so the construction difference is evidence, not narration:
+
+* Sculptor: `wasteMesh.count = 26,521 − k` ticking *down*; the tree mesh
+  shown as `always 2,639 — occluded`.
+* Gardener: `gardenMesh.count = k` ticking *up* from zero.
+* Per-pane `renderer.info.render.triangles` — engine-reported, not scripted:
+  the left number falls, the right number rises, and they meet.
+* A scrolling operation tape: `remove #12,004 @ (x,y,z)` / `add #1,833 @ …`,
+  append-only on both sides.
+
+== 2 · Many forms, one machinery
+
+The carve side is already form-agnostic (BFS distance from any target set
+orders the waste). Only the generator and the growth story are tree-specific.
+
+* Extract a generator interface: `{voxels, colours, growthKey}`.
+* Picker of parametric families: tree, torus knot, letterform, chess piece,
+  standing figure, castle (SDF composition).
+* Generic growth fallback for forms without a natural skeleton:
+  seed-point geodesic or bottom-up sweep.
+
+== 3 · Prompt-driven forms
+
+The two pathways can only consume a *fixed form specification* — the
+invariant requires the form to exist before either pathway starts. So a
+prompt pipeline is a **form compiler** in front of unchanged machinery.
+
+* *v0.1 — picker+params:* prompt → keyword match → parametric family + seed.
+  Deterministic, offline, narrow.
+* *v0.2 — LLM-compiled spec:* the page asks Claude (artifact completion
+  capability) to compile a prompt into a scene spec — layered vectors or a
+  voxel/SDF composition — which both pathways then construct. Produces real
+  composed scenes; weak likeness for named characters.
+* *v0.3 — reference-image mode:* any raster (image-model output or an upload)
+  quantised into cells/stroke-groups; carve and growth orders computed
+  generically. Fidelity is delegated to the reference; this machinery
+  contributes dual construction and addressability. This is the tier where
+  "an established character, but set in the ancient world" actually
+  resembles the character.
+* In-artifact SLM honestly assessed: the artifact CSP blocks runtime weight
+  fetches and the 16 MB budget excludes useful models. Local repo mode has
+  no such sandbox — ONNX/WebGPU SLMs are viable there, not in the artifact.
+
+== 4 · The research programme (the point of all this)
+
+* *Addressable revision experiment:* "remove stroke-group N" vs chat-loop
+  image revision — measure whether procedural addressability eliminates the
+  basin-anchored, unverifiable-revision failure class.
+* *Cross-pathway error taxonomy:* where do carve-order and growth-order
+  disagree or produce artefacts a single pathway hides?
+* *Pathway specialisation:* which demands suit selection-from-abundance,
+  which suit construction-from-seed; can the two co-evolve as skills?
+* *Diffusion tie-in:* a third pane replaying a deterministic (DDIM) denoising
+  trajectory — the sculptor that industry already ships without saying so.
