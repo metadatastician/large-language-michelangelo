@@ -21,7 +21,7 @@
   }
   *{ box-sizing:border-box; }
   body{
-    background:var(--ground); color:var(--ink);
+    margin:0; background:var(--ground); color:var(--ink);
     font-family:'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
     font-size:16.5px; line-height:1.55;
   }
@@ -102,6 +102,13 @@
   button:hover{ background:color-mix(in oklab, var(--ink) 8%, transparent); }
   button:focus-visible, input:focus-visible{ outline:2px solid var(--leaf); outline-offset:2px; }
   button[aria-pressed="true"]{ border-color:var(--stone); color:var(--stone); }
+  select{
+    font-family:'Alegreya Sans', system-ui, sans-serif; font-weight:500; font-size:.86rem;
+    letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:3px;
+    padding:7px 10px; cursor:pointer;
+  }
+  select:focus-visible{ outline:2px solid var(--leaf); outline-offset:2px; }
   #scrub{ flex:1 1 160px; min-width:140px; accent-color:var(--leaf); height:22px; }
   .tval{ font-family:'IBM Plex Mono', monospace; font-size:.78rem; color:var(--muted); min-width:4.2em; text-align:right; font-variant-numeric:tabular-nums; }
 
@@ -109,6 +116,7 @@
     text-align:center; font-family:'IBM Plex Mono', monospace; font-size:.8rem;
     color:var(--muted); margin:16px auto 0; max-width:60em; font-variant-numeric:tabular-nums;
   }
+  #verifyline{ margin-top:6px; font-size:.72rem; }
 
   /* ---------- explainer ---------- */
   .explainer{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-top:44px; }
@@ -150,7 +158,7 @@
     <h1>The Sculptor <span class="amp">&amp;</span> the Gardener</h1>
     <p class="quote">&ldquo;I saw the angel in the marble and carved until I set him free.&rdquo;
       <span class="attr">&mdash; attributed to Michelangelo</span></p>
-    <p class="thesis">The same tree, reached from opposite directions: the left panel only ever removes, the right only ever adds. One timeline moves both worlds.</p>
+    <p class="thesis">The same form, reached from opposite directions: the left panel only ever removes, the right only ever adds. One timeline moves both worlds.</p>
   </header>
 
   <main>
@@ -158,14 +166,14 @@
       <article class="panel" id="panel-s">
         <header>
           <h2>The Sculptor</h2>
-          <p class="tag">Per demptionem &middot; by removal only</p>
+          <p class="tag">Per forza di levare &middot; by removal only</p>
         </header>
         <div class="stage"><canvas id="cv-s" aria-label="A marble block being chiseled away to reveal a tree"></canvas></div>
         <footer class="ledger"><span><span class="live" id="led-s">0</span> removals</span><span class="zero">0 additions</span></footer>
         <div class="mathbox" aria-label="Live render mathematics, Sculptor">
-          <p class="formula">frame(t) = draw( marble[ 0 &hellip; N&minus;k ] ) &cup; draw( <span class="hot">tree[ ALL ]</span> )</p>
+          <p class="formula">frame(t) = draw( marble[ 0 &hellip; N&minus;k ] ) &cup; draw( <span class="hot">form[ ALL ]</span> )</p>
           <p class="mrow"><span>marble instances drawn</span> <span class="mval" id="mb-s-waste">&mdash;</span></p>
-          <p class="mrow"><span>tree instances drawn</span> <span class="mval" id="mb-s-tree">&mdash;</span></p>
+          <p class="mrow"><span>form instances drawn</span> <span class="mval" id="mb-s-tree">&mdash;</span></p>
           <p class="mrow"><span>triangles this frame <span aria-hidden="true">&#9660;</span></span> <span class="mval" id="mb-s-tri">&mdash;</span></p>
           <p class="optape" id="tape-s">awaiting the first stroke</p>
         </div>
@@ -173,13 +181,13 @@
       <article class="panel" id="panel-g">
         <header>
           <h2>The Gardener</h2>
-          <p class="tag">Per additionem &middot; by addition only</p>
+          <p class="tag">Per via di porre &middot; by addition only</p>
         </header>
         <div class="stage"><canvas id="cv-g" aria-label="A tree growing voxel by voxel from a bare field"></canvas></div>
         <footer class="ledger"><span class="zero">0 removals</span><span><span class="live" id="led-g">0</span> additions</span></footer>
         <div class="mathbox" aria-label="Live render mathematics, Gardener">
-          <p class="formula">frame(t) = draw( <span class="hot">tree[ 0 &hellip; k ]</span> ) &nbsp;&mdash; and no other term</p>
-          <p class="mrow"><span>tree instances drawn</span> <span class="mval" id="mb-g-tree">&mdash;</span></p>
+          <p class="formula">frame(t) = draw( <span class="hot">form[ 0 &hellip; k ]</span> ) &nbsp;&mdash; and no other term</p>
+          <p class="mrow"><span>form instances drawn</span> <span class="mval" id="mb-g-tree">&mdash;</span></p>
           <p class="mrow"><span>hidden meshes in scene</span> <span class="mval">0 &mdash; nothing to unmask</span></p>
           <p class="mrow"><span>triangles this frame <span aria-hidden="true">&#9650;</span></span> <span class="mval" id="mb-g-tri">&mdash;</span></p>
           <p class="optape" id="tape-g">awaiting the first voxel</p>
@@ -193,34 +201,42 @@
       <span class="tval" id="tval">0.0%</span>
       <button id="btn-speed" aria-label="Playback speed">1&times;</button>
       <button id="btn-xray" aria-pressed="false">X-ray marble</button>
+      <select id="sel-form" aria-label="Choose the form to carve and grow">
+        <option value="tree" selected>Tree</option>
+        <option value="knot">Torus knot</option>
+        <option value="letter">Letter M</option>
+        <option value="rook">Chess rook</option>
+        <option value="castle">Castle</option>
+      </select>
       <button id="btn-seed">New specimen</button>
     </div>
     <p class="invariant" id="invariant"></p>
+    <p class="invariant" id="verifyline"></p>
 
     <section class="explainer">
       <div class="c-marble">
         <h3>The marble</h3>
-        <p>The tree is fully present inside the block before the first stroke &mdash; toggle X-ray and see it waiting. Carving only deletes: the ledger counts removals and nothing else, roughing out the far waste first, finishing close to the form last.</p>
+        <p>The form is fully present inside the block before the first stroke &mdash; toggle X-ray and see it waiting. Carving only deletes: the ledger counts removals and nothing else, roughing out the far waste first, finishing close to the form last.</p>
         <p class="aside">Generation as selection: start with everything, subtract what is not the form. Diffusion models work this way &mdash; with a deterministic sampler, the image is fixed the moment the block of noise is drawn.</p>
       </div>
       <div class="c-seed">
         <h3>The seed</h3>
-        <p>The right panel begins with nothing but a rulebook and a seed. Voxels are only added, in growth order along the branch skeleton &mdash; and the picture bootstraps its own colour depth as it matures: one bit, then greys, then four colours, then full colour.</p>
+        <p>The right panel begins with nothing but a rulebook and a seed. Voxels are only added, each in the form&rsquo;s own growth order &mdash; root to crown, course upon course &mdash; and the picture bootstraps its own colour depth as it matures: one bit, then greys, then four colours, then full colour.</p>
         <p class="aside">Generation as construction: the prior lives in the rules. L-systems and cellular automata work this way &mdash; an acorn is a very small file.</p>
       </div>
       <div class="c-inv">
         <h3>The invariant</h3>
-        <p>Both panels consume the same seeded tree definition. Their final frames are the identical set of voxels; only the order of operations differs.</p>
+        <p>Both panels consume the same seeded form definition &mdash; pick a different form below and the whole machinery obliges. Their final frames are the identical set of voxels; only the order of operations differs.</p>
         <p class="aside">Two metaphysics &mdash; selection from abundance, construction from seed &mdash; provably converging on one form. Drag the timeline to hold both mid-thought.</p>
       </div>
     </section>
 
     <section class="honesty" aria-label="Why this is not a visual trick">
       <h3>Not a trick &mdash; read the instruments</h3>
-      <p>A fair suspicion: is the Gardener really building, or is a finished picture being revealed &mdash; a mask, a transparency, a background that never looked like what it was? The instrument panels under each scene answer with the engine&rsquo;s own numbers, not our captions. Every frame is rendered from scratch. The Gardener&rsquo;s scene contains a single mesh, and the GPU is instructed to draw exactly <code>k</code> instances of it &mdash; at t&nbsp;=&nbsp;0, <code>k&nbsp;=&nbsp;0</code>, so no tree geometry enters the pipeline at all. There is nothing behind the ground to unmask; addition is the integer <code>k</code> rising. The triangle counter is reported by the renderer itself (<code>renderer.info</code>) and climbs with every voxel &mdash; a reveal would hold it flat.</p>
-      <p>The Sculptor is openly the opposite, and its formula says so: it contains <code>tree[ALL]</code> from the first frame. The complete tree is always drawn, genuinely hidden behind opaque, genuinely-drawn marble &mdash; which is precisely Michelangelo&rsquo;s claim. X-ray never adds the tree; it only thins the marble. And the Gardener&rsquo;s colour bootstrap (one bit &rarr; greys &rarr; four colours &rarr; full colour) recolours voxels already added; it never adds geometry.</p>
-      <p>What does exist beforehand &mdash; honestly &mdash; is the <em>description</em>: the ordered list of cells, computed the moment the seed is drawn, because both sides are required to converge on the same tree. The prior always lives somewhere. The Sculptor keeps it in the block; the Gardener keeps it in the rulebook. Neither creates from nothing; the claim is that these are two orders of one act, not that either is magic.</p>
-      <p>And this is not how machine image generation normally works. A diffusion model starts from a block of noise and denoises &mdash; with a deterministic sampler the noise already fixes the image, making ordinary generation a sculptor that never shows you its marble. A chat loop asked to &ldquo;revise&rdquo; an image re-samples near the same basin, which is why revisions come back strangely unchanged. Here every operation has an address &mdash; stroke &#8470;12,004, voxel &#8470;1,833 &mdash; so a revision is a checkable edit to a list, not a plea to a prior. Sceptics: open the developer console; <code>window.llmProof</code> exposes the live counts, read-only.</p>
+      <p>A fair suspicion: is the Gardener really building, or is a finished picture being revealed &mdash; a mask, a transparency, a background that never looked like what it was? The instrument panels under each scene answer with the engine&rsquo;s own numbers, not our captions. Every frame is rendered from scratch. The Gardener&rsquo;s scene contains a single mesh, and the GPU is instructed to draw exactly <code>k</code> instances of it &mdash; at t&nbsp;=&nbsp;0, <code>k&nbsp;=&nbsp;0</code>, so no form geometry enters the pipeline at all. There is nothing behind the ground to unmask; addition is the integer <code>k</code> rising. The triangle counter is reported by the renderer itself (<code>renderer.info</code>) and climbs with every voxel &mdash; a reveal would hold it flat.</p>
+      <p>The Sculptor is openly the opposite, and its formula says so: it contains <code>form[ALL]</code> from the first frame. The complete form is always drawn, genuinely hidden behind opaque, genuinely-drawn marble &mdash; which is precisely Michelangelo&rsquo;s claim. X-ray never adds the form; it only thins the marble. And the Gardener&rsquo;s colour bootstrap (one bit &rarr; greys &rarr; four colours &rarr; full colour) recolours voxels already added; it never adds geometry.</p>
+      <p>What does exist beforehand &mdash; honestly &mdash; is the <em>description</em>: the ordered list of cells, computed the moment the seed is drawn, because both sides are required to converge on the same form. The prior always lives somewhere. The Sculptor keeps it in the block; the Gardener keeps it in the rulebook. Neither creates from nothing; the claim is that these are two orders of one act, not that either is magic.</p>
+      <p>And this is not how machine image generation normally works. A diffusion model starts from a block of noise and denoises &mdash; with a deterministic sampler the noise already fixes the image, making ordinary generation a sculptor that never shows you its marble. A chat loop asked to &ldquo;revise&rdquo; an image re-samples near the same basin, which is why revisions come back strangely unchanged. Here every operation has an address &mdash; stroke &#8470;12,004, voxel &#8470;1,833 &mdash; so a revision is a checkable edit to a list, not a plea to a prior. Sceptics: open the developer console; <code>window.llmProof</code> exposes the live counts, read-only, and <code>llmProof.verify()</code> re-derives the disjointness, completeness and convergence claims from the live buffers &mdash; the line under the timeline reports the same check, re-run on every build.</p>
     </section>
   </main>
 
@@ -263,10 +279,14 @@
   function cellZ(ci){ return (((ci / NX)|0) % NZ) - HZ; }
   function cellY(ci){ return (ci / NXZ)|0; }
 
-  // ---------- specimen generation (shared by both panes) ----------
-  function generateSpecimen(seed){
-    var rnd = mulberry32(seed);
-    var noise = makeNoise((seed ^ 0x9E3779B9)>>>0);
+  // ---------- the form library ----------
+  // Each form writes ONLY its own cells: type (1 primary / 2 secondary),
+  // per-voxel colour, and the growth key that orders the Gardener's additions.
+  // The marble, the carve ordering and every instrument are form-agnostic.
+  var FORMS = {
+
+  tree: { noun:'tree', label:'Tree',
+   fill: function(seed, rnd, noise, type, col, gkey){
     var segs=[], blobs=[];
 
     function branch(px,py,pz, dx,dy,dz, len, r0, r1, steps, depth, dist){
@@ -313,14 +333,9 @@
       b.y=Math.max(7,   Math.min(34,  b.y));
     }
 
-    // rasterize: type 0=marble(waste) 1=bark 2=leaf
-    var type=new Uint8Array(NCELL);
-    var col=new Float32Array(NCELL*3);
-    var gkey=new Float32Array(NCELL);
+    // rasterize: type 1=bark 2=leaf; untouched cells stay marble
     var barkA=hexToRGB(0x8A6A45), barkB=hexToRGB(0x55402A);
     var leafP=[hexToRGB(0x4C7631), hexToRGB(0x628E3C), hexToRGB(0x7FA84B)];
-    var marA=hexToRGB(0xEDEBE4), marB=hexToRGB(0xDBD9D1);
-    var veinA=hexToRGB(0xAEB4C2), veinB=hexToRGB(0xC4C9D4);
 
     var xi, zi, iy, s, si;
     for(iy=0; iy<NY; iy++){
@@ -366,19 +381,191 @@
               var lc=leafP[band];
               var sh2=(0.86+0.28*noise(cx*1.1+3, cy*1.1, cz*1.1+9))*(1+cy/NY*0.08);
               col[ci*3]=Math.min(1,lc[0]*sh2); col[ci*3+1]=Math.min(1,lc[1]*sh2); col[ci*3+2]=Math.min(1,lc[2]*sh2);
-            } else {
-              // marble
-              var v1=noise(cx*0.13+31, cy*0.13, cz*0.13);
-              var ridg=Math.abs(noise(cx*0.21, cy*0.21+13, cz*0.21)-0.5)*2;
-              var mc=(ridg<0.10)? mix(veinA,veinB,v1) : mix(marA,marB,v1);
-              col[ci*3]=mc[0]; col[ci*3+1]=mc[1]; col[ci*3+2]=mc[2];
             }
           }
         }
       }
     }
+   }
+  },
 
-    // BFS: geodesic distance from tree through the waste
+  knot: { noun:'torus knot', label:'Torus knot',
+   fill: function(seed, rnd, noise, type, col, gkey){
+    // (p,q) torus knot, seed-selected; growth key = curve parameter, so the
+    // Gardener threads the knot end to end while the Sculptor circles it.
+    var pqs=[[2,3],[3,4],[2,5],[3,5]], pq=pqs[(rnd()*pqs.length)|0], P=pq[0], Q=pq[1];
+    var R1=7.0, R2=3.3, TUBE=2.05, CY=16, SAMPLES=900;
+    var metA=hexToRGB(0x7A5A2E), metB=hexToRGB(0xD9B36C);
+    var s, xx, zz, iy;
+    for(s=0;s<SAMPLES;s++){
+      var u=s/SAMPLES*Math.PI*2;
+      var rad=R1+R2*Math.cos(Q*u);
+      var px=rad*Math.cos(P*u), pz=rad*Math.sin(P*u), py=CY+R2*Math.sin(Q*u)*1.35;
+      var x0=Math.max(-HX, Math.floor(px-TUBE-1)), x1=Math.min(HX, Math.ceil(px+TUBE+1));
+      var z0=Math.max(-HZ, Math.floor(pz-TUBE-1)), z1=Math.min(HZ, Math.ceil(pz+TUBE+1));
+      var y0=Math.max(0, Math.floor(py-TUBE-1)),  y1=Math.min(NY-1, Math.ceil(py+TUBE+1));
+      for(iy=y0;iy<=y1;iy++) for(zz=z0;zz<=z1;zz++) for(xx=x0;xx<=x1;xx++){
+        var dx=xx-px, dy=iy+0.5-py, dz=zz-pz;
+        if(dx*dx+dy*dy+dz*dz > TUBE*TUBE) continue;
+        var ci=cellIndex(xx+HX, iy, zz+HZ);
+        if(type[ci]!==0) continue;
+        type[ci]=1;
+        gkey[ci]=s + noise(xx*0.8, iy*0.8+17, zz*0.8)*1.5;
+        var c=mix(metA, metB, Math.min(1, Math.max(0, noise(xx*0.55+7, iy*0.55, zz*0.55)*1.35-0.1)));
+        var sh=0.85+0.3*noise(xx*1.1, iy*1.1+11, zz*1.1);
+        col[ci*3]=Math.min(1,c[0]*sh); col[ci*3+1]=Math.min(1,c[1]*sh); col[ci*3+2]=Math.min(1,c[2]*sh);
+      }
+    }
+   }
+  },
+
+  letter: { noun:'letter M', label:'Letter M',
+   fill: function(seed, rnd, noise, type, col, gkey){
+    // hand-authored bitmap, NOT canvas-rasterised text: canvas text metrics
+    // differ per OS/browser and would silently break same-seed-same-voxels.
+    var rows=[
+      '##.......##',
+      '###.....###',
+      '####...####',
+      '##.#...#.##',
+      '##.##.##.##',
+      '##..#.#..##',
+      '##...#...##',
+      '##.......##',
+      '##.......##',
+      '##.......##',
+      '##.......##',
+      '##.......##',
+      '##.......##',
+      '##.......##',
+      '##.......##'
+    ];
+    var BW=11, BH=15, SC=2, DEPTH=6, X0=-11, Y0=3, Z0=-3;
+    var inkA=hexToRGB(0x23273A), inkB=hexToRGB(0x46517A);
+    var by, bx, sy, sx, dz;
+    for(by=0;by<BH;by++) for(bx=0;bx<BW;bx++){
+      if(rows[by].charAt(bx)!=='#') continue;
+      for(sy=0;sy<SC;sy++) for(sx=0;sx<SC;sx++) for(dz=0;dz<DEPTH;dz++){
+        var wx=X0+bx*SC+sx, wy=Y0+(BH-1-by)*SC+sy, wz=Z0+dz;
+        if(wx<-HX||wx>HX||wz<-HZ||wz>HZ||wy<0||wy>=NY) continue;
+        var ci=cellIndex(wx+HX, wy, wz+HZ);
+        type[ci]=1;
+        gkey[ci]=wy*2 + noise(wx*0.6, wy*0.6+17, wz*0.6)*3;
+        var c=mix(inkA, inkB, noise(wx*0.5+5, wy*0.5, wz*0.5));
+        var sh=0.9+0.2*noise(wx*1.3, wy*1.3+23, wz*1.3);
+        col[ci*3]=Math.min(1,c[0]*sh); col[ci*3+1]=Math.min(1,c[1]*sh); col[ci*3+2]=Math.min(1,c[2]*sh);
+      }
+    }
+   }
+  },
+
+  rook: { noun:'chess rook', label:'Chess rook',
+   fill: function(seed, rnd, noise, type, col, gkey){
+    // lathe profile; growth key spirals up the turning like a lathe pass
+    var wA=hexToRGB(0x4A3626), wB=hexToRGB(0x7A5E40);
+    function radiusAt(iy){
+      if(iy<4)  return 7.4 - iy*0.40;          // base flare
+      if(iy<24) return 5.1 - (iy-4)*0.045;     // tapered shaft
+      if(iy<27) return 5.8;                    // collar
+      if(iy<32) return 6.2;                    // head
+      return 6.2;                              // merlon band (sector-gated)
+    }
+    var iy, xx, zz;
+    for(iy=0; iy<37; iy++){
+      var rad=radiusAt(iy);
+      for(zz=-HZ; zz<=HZ; zz++) for(xx=-HX; xx<=HX; xx++){
+        var d=Math.sqrt(xx*xx+zz*zz);
+        if(d>rad) continue;
+        var ang=Math.atan2(zz,xx)+Math.PI;
+        if(iy>=32){
+          if(((ang/(Math.PI/4))|0)%2===1) continue;   // four merlons
+          if(d<3.5) continue;                          // hollow crown
+        }
+        var ci=cellIndex(xx+HX, iy, zz+HZ);
+        type[ci]=1;
+        gkey[ci]=iy*3 + (ang/(2*Math.PI))*2.5 + noise(xx*0.6, iy*0.6+31, zz*0.6)*1.2;
+        var c=mix(wA, wB, noise(xx*0.45+9, iy*0.45, zz*0.45));
+        var sh=0.88+0.24*noise(xx*1.2, iy*1.2+41, zz*1.2);
+        col[ci*3]=Math.min(1,c[0]*sh); col[ci*3+1]=Math.min(1,c[1]*sh); col[ci*3+2]=Math.min(1,c[2]*sh);
+      }
+    }
+   }
+  },
+
+  castle: { noun:'castle', label:'Castle',
+   fill: function(seed, rnd, noise, type, col, gkey){
+    // keep + four towers + curtain walls; growth key = masonry courses,
+    // so the Gardener builds it the way masons would
+    var sA=hexToRGB(0xCDBB97), sB=hexToRGB(0xA8926C), roofC=hexToRGB(0x7E4A3A);
+    function put(wx, iy, wz, isRoof){
+      if(wx<-HX||wx>HX||wz<-HZ||wz>HZ||iy<0||iy>=NY) return;
+      var ci=cellIndex(wx+HX, iy, wz+HZ);
+      if(type[ci]!==0) return;
+      type[ci]=isRoof?2:1;
+      gkey[ci]=iy*4 + noise(wx*0.5, iy*0.5+13, wz*0.5)*3 + (Math.abs(wx)+Math.abs(wz))*0.06;
+      var c=isRoof? roofC : mix(sA, sB, noise(wx*0.5+3, iy*0.5, wz*0.5));
+      var sh=0.87+0.26*noise(wx*1.1, iy*1.1+19, wz*1.1);
+      col[ci*3]=Math.min(1,c[0]*sh); col[ci*3+1]=Math.min(1,c[1]*sh); col[ci*3+2]=Math.min(1,c[2]*sh);
+    }
+    var xx, zz, iy, ti;
+    // the keep, crenellated
+    for(iy=0;iy<18;iy++) for(zz=-4;zz<=4;zz++) for(xx=-4;xx<=4;xx++) put(xx,iy,zz,false);
+    for(zz=-4;zz<=4;zz++) for(xx=-4;xx<=4;xx++)
+      if((Math.abs(xx)===4||Math.abs(zz)===4) && ((xx+zz)&1)===0) put(xx,18,zz,false);
+    // four corner towers with conical roofs
+    var T=[[-9,-9],[9,-9],[-9,9],[9,9]];
+    for(ti=0;ti<4;ti++){
+      var tx=T[ti][0], tz=T[ti][1];
+      for(iy=0;iy<24;iy++) for(zz=tz-3;zz<=tz+3;zz++) for(xx=tx-3;xx<=tx+3;xx++)
+        if(Math.hypot(xx-tx,zz-tz)<=2.9) put(xx,iy,zz,false);
+      for(iy=0;iy<5;iy++){
+        var rr=2.9-iy*0.62;
+        for(zz=tz-3;zz<=tz+3;zz++) for(xx=tx-3;xx<=tx+3;xx++)
+          if(Math.hypot(xx-tx,zz-tz)<=rr) put(xx,24+iy,zz,true);
+      }
+    }
+    // curtain walls with a south gate, crenellated
+    for(iy=0;iy<10;iy++){
+      for(xx=-9;xx<=9;xx++){
+        put(xx,iy,-9,false);
+        if(!(iy<7 && Math.abs(xx)<2)) put(xx,iy,9,false);
+      }
+      for(zz=-9;zz<=9;zz++){ put(-9,iy,zz,false); put(9,iy,zz,false); }
+    }
+    for(xx=-9;xx<=9;xx++) if((xx&1)===0){ put(xx,10,-9,false); put(xx,10,9,false); }
+    for(zz=-9;zz<=9;zz++) if((zz&1)===0){ put(-9,10,zz,false); put(9,10,zz,false); }
+   }
+  }
+
+  };
+
+  // the marble paints every cell the form left untouched — identical for all forms
+  function paintMarble(noise, type, col){
+    var marA=hexToRGB(0xEDEBE4), marB=hexToRGB(0xDBD9D1);
+    var veinA=hexToRGB(0xAEB4C2), veinB=hexToRGB(0xC4C9D4);
+    var ci, cx, cy, cz;
+    for(ci=0; ci<NCELL; ci++){
+      if(type[ci]!==0) continue;
+      cx=cellX(ci); cy=cellY(ci)+0.5; cz=cellZ(ci);
+      var v1=noise(cx*0.13+31, cy*0.13, cz*0.13);
+      var ridg=Math.abs(noise(cx*0.21, cy*0.21+13, cz*0.21)-0.5)*2;
+      var mc=(ridg<0.10)? mix(veinA,veinB,v1) : mix(marA,marB,v1);
+      col[ci*3]=mc[0]; col[ci*3+1]=mc[1]; col[ci*3+2]=mc[2];
+    }
+  }
+
+  // ---------- specimen generation (shared by both panes) ----------
+  function generateSpecimen(seed, formKey){
+    var form=FORMS[formKey];
+    var rnd = mulberry32(seed);
+    var noise = makeNoise((seed ^ 0x9E3779B9)>>>0);
+    var type=new Uint8Array(NCELL);
+    var col=new Float32Array(NCELL*3);
+    var gkey=new Float32Array(NCELL);
+    form.fill(seed, rnd, noise, type, col, gkey);
+    paintMarble(noise, type, col);
+
+    // BFS: geodesic distance from the form through the waste
     var dist=new Int16Array(NCELL); dist.fill(-1);
     var queue=new Int32Array(NCELL), qh=0, qt=0, ci2;
     for(ci2=0; ci2<NCELL; ci2++) if(type[ci2]!==0){ dist[ci2]=0; queue[qt++]=ci2; }
@@ -409,7 +596,7 @@
     }
     wasteCells.sort(function(a,b){ return (prio[b]-prio[a]) || (sweep[a]-sweep[b]); });
 
-    return { seed:seed, type:type, col:col, treeOrder:treeCells, removeOrder:wasteCells };
+    return { seed:seed, form:formKey, noun:form.noun, type:type, col:col, treeOrder:treeCells, removeOrder:wasteCells };
   }
 
   // ---------- pane scaffolding ----------
@@ -483,9 +670,11 @@
     wasteMesh=treeMeshS=gardenMesh=rubbleMesh=chipMesh=null;
   }
 
-  function buildSpecimen(seed){
+  var currentForm='tree';
+  function buildSpecimen(seed, formKey){
+    if(formKey) currentForm=formKey;
     destroySpecimen();
-    spec=generateSpecimen(seed);
+    spec=generateSpecimen(seed, currentForm);
     Nw=spec.removeOrder.length; Nt=spec.treeOrder.length;
 
     wasteMesh = voxelInstancedMesh(spec.removeOrder, spec.col, true);   // remaining = prefix
@@ -504,6 +693,7 @@
       gardenLum[i]=0.2126*r+0.7152*g+0.0722*b;
     }
     gStage=-1;
+    derivePalette();
 
     // deterministic rubble field (one persistent chip per 6 removals)
     rubbleMax=Math.min(Math.floor(Nw/6), 4200);
@@ -535,10 +725,13 @@
     mbSt.textContent=Nt.toLocaleString('en-GB')+' — always, occluded';
     document.getElementById('seed-no').textContent=String(seed);
     document.getElementById('invariant').textContent =
-      'One tree · '+Nt.toLocaleString('en-GB')+' voxels — carved free of a '+
+      'One '+spec.noun+' · '+Nt.toLocaleString('en-GB')+' voxels — carved free of a '+
       (Nt+Nw).toLocaleString('en-GB')+'-voxel block on the left ('+Nw.toLocaleString('en-GB')+
       ' removals) · assembled from a bare field on the right ('+Nt.toLocaleString('en-GB')+' additions).';
+    paneS.canvas.setAttribute('aria-label','A marble block being chiselled away to reveal a '+spec.noun);
+    paneG.canvas.setAttribute('aria-label','A '+spec.noun+' growing voxel by voxel from a bare field');
     kS=-1; kG=-1;
+    runVerify();
   }
 
   function hideChip(i){ tmpM.makeScale(0,0,0); chipMesh.setMatrixAt(i,tmpM); }
@@ -546,12 +739,38 @@
   // ---------- gardener colour-depth bootstrap ----------
   var gStage=-1;
   var quant=[hexToRGB(0x3F3325), hexToRGB(0x567F35), hexToRGB(0x9BB565), hexToRGB(0xE6E2D2)];
-  var oneA=hexToRGB(0x262A20), oneB=hexToRGB(0xE9E5D6);
+  var oneA=hexToRGB(0x262A20), oneB=hexToRGB(0xE9E5D6), oneThr=0.40;
+  // the 1-bit threshold and the 4-colour palette are derived from the form
+  // itself — luminance quartiles of the finished colouring — so every form
+  // quantises against its own gamut; empty buckets borrow a neighbour's mean
+  function derivePalette(){
+    var lums=Array.prototype.slice.call(gardenLum).sort(function(a,b){ return a-b; });
+    var q1=lums[(Nt*0.25)|0], q2=lums[(Nt*0.5)|0], q3=lums[(Nt*0.75)|0];
+    oneThr=q2;
+    var acc=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], i, j, bkt;
+    for(i=0;i<Nt;i++){
+      var L=gardenLum[i];
+      bkt = L<q1?0 : L<q2?1 : L<q3?2 : 3;
+      acc[bkt][0]+=gardenFull[i*3]; acc[bkt][1]+=gardenFull[i*3+1];
+      acc[bkt][2]+=gardenFull[i*3+2]; acc[bkt][3]++;
+    }
+    var out=[null,null,null,null];
+    for(i=0;i<4;i++) if(acc[i][3]>0)
+      out[i]=[acc[i][0]/acc[i][3], acc[i][1]/acc[i][3], acc[i][2]/acc[i][3]];
+    for(i=0;i<4;i++) if(!out[i]){
+      for(j=1;j<4 && !out[i];j++){
+        if(i-j>=0 && out[i-j]) out[i]=out[i-j];
+        else if(i+j<4 && out[i+j]) out[i]=out[i+j];
+      }
+      if(!out[i]) out[i]=[0.5,0.5,0.5];
+    }
+    quant=out;
+  }
   function stageFor(t){ return t<0.25?0 : t<0.5?1 : t<0.75?2 : 3; }
   function applyStage(st){
     var i, r,g,b;
     for(i=0;i<Nt;i++){
-      if(st===0){ var c1=gardenLum[i]>0.40?oneB:oneA; r=c1[0]; g=c1[1]; b=c1[2]; }
+      if(st===0){ var c1=gardenLum[i]>oneThr?oneB:oneA; r=c1[0]; g=c1[1]; b=c1[2]; }
       else if(st===1){ r=g=b=gardenLum[i]; }
       else if(st===2){
         var fr=gardenFull[i*3], fg=gardenFull[i*3+1], fb=gardenFull[i*3+2];
@@ -610,17 +829,48 @@
       mbGt=document.getElementById('mb-g-tree'), mbGtri=document.getElementById('mb-g-tri'),
       tapeG=document.getElementById('tape-g');
   var triS=0, triG=0, triShown=0;
+  var verifyLine=document.getElementById('verifyline');
   function fmt(n){ return n.toLocaleString('en-GB'); }
   function cellStr(ci){ return '('+cellX(ci)+', '+cellY(ci)+', '+cellZ(ci)+')'; }
+
+  // re-derive the page's claims from the live buffers, never from captions:
+  // the two op streams must partition the block (disjoint + complete) and the
+  // Gardener's additions must be exactly the cells the Sculptor never removes
+  function verifyInvariant(){
+    var seen=new Uint8Array(NCELL), i, ci;
+    var dupForm=0, dupWaste=0, formNotForm=0, wasteNotWaste=0, missing=0, both=0;
+    for(i=0;i<Nt;i++){ ci=spec.treeOrder[i];
+      if(seen[ci]&1) dupForm++; seen[ci]|=1;
+      if(spec.type[ci]===0) formNotForm++; }
+    for(i=0;i<Nw;i++){ ci=spec.removeOrder[i];
+      if(seen[ci]&2) dupWaste++; seen[ci]|=2;
+      if(spec.type[ci]!==0) wasteNotWaste++; }
+    for(ci=0;ci<NCELL;ci++){ if(seen[ci]===0) missing++; else if(seen[ci]===3) both++; }
+    return {
+      disjoint: both===0 && dupForm===0 && dupWaste===0,
+      complete: missing===0 && (Nt+Nw)===NCELL,
+      convergent: formNotForm===0 && wasteNotWaste===0,
+      counts: { form:Nt, waste:Nw, block:NCELL }
+    };
+  }
+  function runVerify(){
+    var v=verifyInvariant(), tick='✓', cross='✗';
+    verifyLine.textContent='verified against live buffers — streams disjoint '+
+      (v.disjoint?tick:cross)+' · union complete '+(v.complete?tick:cross)+
+      ' ('+fmt(Nt)+' + '+fmt(Nw)+' = '+fmt(NCELL)+') · pathways convergent '+
+      (v.convergent?tick:cross);
+  }
+
   // read-only live counts for sceptics (see the "Not a trick" section)
   window.llmProof = {
-    get sculptor(){ return { marbleInstancesDrawn:wasteMesh.count, treeInstancesDrawn:treeMeshS.count,
+    get sculptor(){ return { marbleInstancesDrawn:wasteMesh.count, formInstancesDrawn:treeMeshS.count,
       removalsApplied:kS, trianglesLastFrame:triS }; },
-    get gardener(){ return { treeInstancesDrawn:gardenMesh.count, additionsApplied:kG,
-      hiddenMeshesInScene:0, trianglesLastFrame:triG }; }
+    get gardener(){ return { formInstancesDrawn:gardenMesh.count, additionsApplied:kG,
+      hiddenMeshesInScene:0, trianglesLastFrame:triG }; },
+    verify: verifyInvariant
   };
 
-  buildSpecimen(7);
+  buildSpecimen(7, 'tree');
 
   function setCounts(force){
     var nkS=Math.round(t*Nw), nkG=Math.round(t*Nt);
@@ -713,7 +963,11 @@
   document.getElementById('btn-seed').addEventListener('click', function(){
     var ns=((spec.seed*1664525+1013904223)>>>0)%100000;
     buildSpecimen(ns===spec.seed?ns+1:ns);
-    t=0; holdUntil=0; setCounts(true);
+    t=RM?0.62:0; holdUntil=0; setCounts(true);
+  });
+  document.getElementById('sel-form').addEventListener('change', function(){
+    buildSpecimen(spec.seed, this.value);
+    t=RM?0.62:0; holdUntil=0; setCounts(true);
   });
 
   // ---------- main loop ----------
