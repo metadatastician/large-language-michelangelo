@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: MPL-2.0
+= large-language-michelangelo
+:toc: preamble
+:experimental:
+
+_"I saw the angel in the marble and carved until I set him free."_ — attributed to Michelangelo
+
+One tree, two metaphysics. A single-file interactive demonstration that
+generation-by-removal and generation-by-addition are the same act read in
+opposite directions.
+
+== Live
+
+https://claude.ai/code/artifact/38d095d3-4957-415c-9ac0-4ff2d3ad2773
+
+== What it shows
+
+Two synced 3-D panes, one shared timeline, one deterministic tree definition
+(seeded PRNG → branch skeleton → voxel raster, 29,160 cells).
+
+The Sculptor (left)::
+Begins with a solid marble block that already contains the tree. The only
+operation ever applied is *remove* — 26,521 chisel strokes in an outside-in
+wavefront, chips falling and settling into a rubble ring. An X-ray toggle
+ghosts the block to show the form waiting inside before a single stroke has
+landed. Ledger: `N removals · 0 additions`.
+
+The Gardener (right)::
+Begins with bare ground and a rulebook. The only operation is *add* — 2,639
+voxels placed in growth order along the branch skeleton, while the rendering
+bootstraps its own colour depth as it matures: one bit, then greys, then four
+colours, then full RGB. Ledger: `0 removals · N additions`.
+
+The invariant::
+Both panes consume the identical voxel set. Their final frames are the same
+tree; only the temporal order of operations differs. The page states the
+arithmetic: tree voxels + removals = block (2,639 + 26,521 = 29,160).
+
+== Why it exists
+
+The project began as a challenge prompt — "you are the Michelangelo of LLMs;
+generate an image by *removing* from a block, never adding" — which roughly
+ten different LLMs declared "fundamentally, mathematically impossible for any
+LLM." The verdict encoded here is that they were wrong about the mathematics
+and right only about a narrow reading of token streams:
+
+* Deterministic diffusion sampling (DDIM/ODE flow) means the noise block
+  uniquely determines the image — the statue really is already in the marble.
+* Autoregressive generation is monotone *subtraction in possibility-space*:
+  every token discards futures.
+* Additive-from-nothing is the picture nothing implements — a prior always
+  exists somewhere: a noise block, a distribution, or a rulebook plus a seed.
+  The Gardener relocates the prior into the rules; the Sculptor leaves it in
+  the block. Neither creates ex nihilo.
+
+Behind the toy sits a research itch: procedural pathways make revisions
+*addressable and diffable* (remove stroke 12,004; re-order the canopy),
+where chat-loop image revision is basin-anchored and unverifiable. Two
+pathways that provably converge give you a cross-check that a single
+pathway cannot.
+
+== Running locally
+
+Open `index.html` in a browser. The only external dependencies are Three.js
+0.160.0 (pinned, cdnjs) and Google Fonts; everything else is inline.
+Honours `prefers-reduced-motion` by parking the timeline at a static
+mid-carve frame.
+
+== Licence
+
+MPL-2.0. See `LICENSE`.
