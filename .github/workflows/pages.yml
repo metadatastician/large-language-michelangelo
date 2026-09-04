@@ -2,17 +2,19 @@
 #
 # Publish index.html to GitHub Pages.
 #
-# The page is one self-contained HTML file (a pinned Three.js UMD build from
-# cdnjs is its only external script), so the "site" is that file served as
-# index.html. Nothing to build; ci.yml verifies the committed file's shape.
+# The page is one self-contained HTML source fragment (a pinned Three.js UMD
+# build from cdnjs is its only external script), so the "site" is that fragment
+# assembled and served as index.html. ci.yml verifies the committed source;
+# this workflow verifies the rendered artifact and the live deployment.
 #
-# ── Why the doctype is prepended here ────────────────────────────────────────
+# ── Why the document wrapper is added here ────────────────────────────────
 # index.html is Artifact-shaped: the Claude Artifact host wraps it in its own
 # <!doctype html>…<head>…</head><body> skeleton at publish time, so the
-# committed file must NOT carry a doctype of its own. Served raw, a
-# doctype-less page renders in quirks mode. The assemble step below prepends
-# `<!doctype html>` for Pages, keeping ONE committed source for both venues.
-# ci.yml asserts the committed file stays doctype-free.
+# committed file must NOT carry that skeleton. Served raw, a doctype-less page
+# renders in quirks mode and lacks a document language. The assemble step below
+# supplies a valid English HTML document, charset, and viewport for Pages while
+# keeping ONE committed source for both venues. ci.yml asserts that source
+# remains Artifact-shaped.
 #
 # ── Why the artifact is packed by hand ───────────────────────────────────────
 # actions/upload-pages-artifact cannot be used in this organisation: it calls
@@ -30,13 +32,10 @@ name: pages
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
-permissions:
-  actions: read
-  contents: read
-  pages: write
-  id-token: write
+permissions: {}
 
 # Never cancel an in-flight deployment; let it finish and queue the next.
 concurrency:
@@ -47,22 +46,58 @@ jobs:
   build:
     name: assemble site
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Assemble the site from the committed page
         run: |
           set -euo pipefail
-          test -f index.html
+          test -s index.html
           mkdir -p _site
-          printf '<!doctype html>\n' > _site/index.html
-          cat index.html >> _site/index.html
+          awk '
+            BEGIN {
+              print "<!doctype html>"
+              print "<html lang=\"en\">"
+              print "<head>"
+              print "<meta charset=\"utf-8\">"
+              print "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+              in_head = 1
+            }
+            {
+              print
+              if (in_head && $0 ~ /<\/style>/) {
+                print "</head>"
+                print "<body>"
+                in_head = 0
+              }
+            }
+            END {
+              if (in_head) {
+                print "::error file=index.html::source fragment has no closing style element" > "/dev/stderr"
+                exit 1
+              }
+              print "</body>"
+              print "</html>"
+            }
+          ' index.html > _site/index.html
           mkdir -p _site/.well-known
           cp .well-known/*.txt _site/.well-known/
           # Bypass Jekyll — this is a plain static file, not a Jekyll source tree.
           touch _site/.nojekyll
           echo "site assembled ($(wc -c < _site/index.html) bytes)"
+
+      - name: Prove the verifier detects planted failures
+        run: python3 .github/scripts/verify-pages-site.py --self-test
+
+      - name: Verify the rendered Pages artifact
+        run: |
+          python3 .github/scripts/verify-pages-site.py \
+            _site \
+            --base-path /large-language-michelangelo/ \
+            --expected-marker "The Sculptor and the Gardener"
 
       # Exactly what actions/upload-pages-artifact packs, done inline so no
       # unpinned transitive action is involved. Deploy expects a single
@@ -89,11 +124,68 @@ jobs:
   deploy:
     name: deploy to github-pages
     needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+  verify-live:
+    name: verify live deployment
+    needs: deploy
+    if: needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    env:
+      PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+      EXPECTED_MARKER: The Sculptor and the Gardener
+    steps:
+      - name: Require HTTPS and expected deployed content
+        run: |
+          set -euo pipefail
+          case "$PAGE_URL" in
+            https://*) ;;
+            *) echo "::error::deployment URL is not HTTPS: $PAGE_URL"; exit 1 ;;
+          esac
+
+          response="${RUNNER_TEMP}/pages-response.html"
+          headers="${RUNNER_TEMP}/pages-headers.txt"
+          for attempt in $(seq 1 12); do
+            result="$(curl \
+              --silent --show-error --location \
+              --proto '=https' --tlsv1.2 \
+              --connect-timeout 10 --max-time 30 \
+              --dump-header "$headers" \
+              --output "$response" \
+              --write-out '%{http_code} %{url_effective}' \
+              "$PAGE_URL")" || result="000 $PAGE_URL"
+            status="${result%% *}"
+            effective_url="${result#* }"
+
+            if [ "$status" = 200 ] \
+              && [ -s "$response" ] \
+              && grep -Eiq '^content-type: *text/html' "$headers" \
+              && grep -Fq '<html lang="en">' "$response" \
+              && grep -Fq "$EXPECTED_MARKER" "$response" \
+              && ! grep -Fqi "There isn't a GitHub Pages site here" "$response"; then
+              case "$effective_url" in
+                https://*) echo "live Pages deployment verified: $effective_url"; exit 0 ;;
+              esac
+            fi
+
+            echo "attempt $attempt/12 not healthy yet (HTTP $status, effective URL $effective_url)"
+            sleep 5
+          done
+
+          echo "::error::live Pages deployment did not become healthy"
+          exit 1
