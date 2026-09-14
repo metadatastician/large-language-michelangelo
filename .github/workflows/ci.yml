@@ -40,8 +40,20 @@ jobs:
         run: |
           set -euo pipefail
           fail=0
-          [ "$(head -1 index.html)" = "<!-- SPDX-License-Identifier: MPL-2.0 -->" ] \
-            || { echo "::error file=index.html::line 1 must be the MPL-2.0 SPDX comment"; fail=1; }
+          n=0
+          for f in ./*.html; do
+            n=$((n+1))
+            [ "$(head -1 "$f")" = "<!-- SPDX-License-Identifier: MPL-2.0 -->" ] \
+              || { echo "::error file=$f::line 1 must be the MPL-2.0 SPDX comment"; fail=1; }
+          done
+          [ "$n" -ge 2 ] || { echo "::error::expected at least 2 root .html pages, saw $n — the glob matched nothing and this gate would be vacuous"; fail=1; }
+          m=0
+          for f in test/*.mjs; do
+            m=$((m+1))
+            [ "$(head -1 "$f")" = "// SPDX-License-Identifier: MPL-2.0" ] \
+              || { echo "::error file=$f::line 1 must be the MPL-2.0 SPDX comment"; fail=1; }
+          done
+          [ "$m" -ge 2 ] || { echo "::error::expected at least 2 test sources, saw $m"; fail=1; }
           while IFS= read -r f; do
             [ "$(head -1 "$f")" = "// SPDX-License-Identifier: CC-BY-SA-4.0" ] \
               || { echo "::error file=$f::missing CC-BY-SA-4.0 SPDX header"; fail=1; }
@@ -60,26 +72,40 @@ jobs:
           done < <(find . -name '*.a2ml' -not -path './.git/*')
           [ "$fail" = 0 ]
 
-      - name: Exactly one external script, and it is Three.js 0.160.0 pinned
+      - name: Every page loads exactly one external script — pinned Three.js 0.160.0
         run: |
           set -euo pipefail
-          n="$(grep -c '<script src=' index.html)"
-          [ "$n" = 1 ] || { echo "::error::expected exactly 1 external script tag, found $n"; exit 1; }
-          grep -q 'src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"' index.html \
-            || { echo "::error::the external script is not the pinned Three.js 0.160.0 cdnjs UMD build"; exit 1; }
-          echo "three.js pin intact"
+          fail=0
+          seen=0
+          for f in ./*.html; do
+            seen=$((seen+1))
+            n="$(grep -c '<script src=' "$f" || true)"
+            [ "$n" = 1 ] || { echo "::error file=$f::expected exactly 1 external script tag, found $n"; fail=1; }
+            grep -q 'src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"' "$f" \
+              || { echo "::error file=$f::the external script is not the pinned Three.js 0.160.0 cdnjs UMD build"; fail=1; }
+          done
+          [ "$seen" -ge 2 ] || { echo "::error::glob matched $seen pages; this gate would be vacuous"; fail=1; }
+          [ "$fail" = 0 ]
+          echo "three.js pin intact across $seen pages"
 
       # The committed page is Artifact-shaped: the Claude Artifact host
       # supplies the document skeleton, and pages.yml prepends the doctype for
       # GitHub Pages. A committed doctype would double up on the artifact.
-      - name: index.html stays Artifact-shaped (no doctype of its own)
+      - name: Every page stays Artifact-shaped (no doctype of its own)
         run: |
           set -euo pipefail
-          if grep -qi '<!doctype' index.html; then
-            echo "::error file=index.html::committed page must not carry a doctype; pages.yml prepends it at assemble time"
-            exit 1
-          fi
-          echo "artifact-shaped"
+          fail=0
+          seen=0
+          for f in ./*.html; do
+            seen=$((seen+1))
+            if grep -qi '<!doctype' "$f"; then
+              echo "::error file=$f::committed page must not carry a doctype; pages.yml prepends it at assemble time"
+              fail=1
+            fi
+          done
+          [ "$seen" -ge 2 ] || { echo "::error::glob matched $seen pages; this gate would be vacuous"; fail=1; }
+          [ "$fail" = 0 ]
+          echo "artifact-shaped across $seen pages"
 
       - name: Every action is pinned to a full commit SHA
         run: |
@@ -99,3 +125,54 @@ jobs:
             exit 1
           fi
           echo "no template placeholders remain"
+
+      # index.html and studio.html must each be a single self-contained file --
+      # the Artifact sandbox cannot load a local .js -- so the engine is
+      # duplicated between them. There is no bundler; this gate is what makes
+      # the duplication safe, by making drift fail the build instead of going
+      # unnoticed.
+      - name: The shared engine is byte-identical in both pages
+        run: |
+          set -euo pipefail
+          fail=0
+          prev=""
+          seen=0
+          for f in ./*.html; do
+            b="$(grep -c '===== BEGIN SHARED ENGINE =====' "$f" || true)"
+            e="$(grep -c '===== END SHARED ENGINE =====' "$f" || true)"
+            [ "$b" = 1 ] && [ "$e" = 1 ] || { echo "::error file=$f::expected exactly one BEGIN and one END SHARED ENGINE marker, found $b and $e"; fail=1; continue; }
+            awk '/===== BEGIN SHARED ENGINE =====/{on=1;next} /===== END SHARED ENGINE =====/{on=0} on' "$f" > region.txt
+            lines="$(wc -l < region.txt)"
+            [ "$lines" -ge 100 ] || { echo "::error file=$f::shared engine region is only $lines lines — the markers moved and this gate would be vacuous"; fail=1; continue; }
+            h="$(sha256sum < region.txt | cut -d' ' -f1)"
+            echo "$f  $h  $lines lines"
+            seen=$((seen+1))
+            if [ -n "$prev" ] && [ "$h" != "$prev" ]; then
+              echo "::error file=$f::shared engine has drifted from the other page — the regions must hash identically"
+              fail=1
+            fi
+            prev="$h"
+          done
+          rm -f region.txt
+          [ "$seen" -ge 2 ] || { echo "::error::compared $seen engine regions; this gate would be vacuous"; fail=1; }
+          [ "$fail" = 0 ]
+
+  determinism:
+    name: determinism suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # No actions/setup-node: ubuntu-latest already ships a Node with
+      # node --test, and every additional `uses:` ref is another thing the
+      # pin policy and any future actions.lock have to agree about.
+      - name: Node version in use
+        run: node --version
+
+      # ROADMAP P-7 claims the build is deterministic. This is the measurement
+      # behind that claim: the two pure regions of studio.html are linked and
+      # run with no browser, and the resulting type/col/treeOrder/removeOrder
+      # buffers are hashed against committed fixtures.
+      - name: Golden determinism fixtures (P-7)
+        run: node --test test/determinism.test.mjs
