@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Session log
+:toc:
+
+This directory holds dated records of how the repository's claims were checked.
+
+`CHANGELOG.md` records *what shipped*. It is the wrong instrument for recording that
+a shipped sentence miscounted itself, that a commit carried the wrong author's name,
+or that a page which passes every automated gate has still never been opened by a
+human. Those facts matter to anyone citing this work, and they have nowhere else to
+live.
+
+== Naming
+
+`YYYY-MM-DD-topic-slug.adoc`, one file per working session that produced something
+worth checking.
+
+== The rule that keeps this honest
+
+*A log entry records how a claim was checked, and is never edited after its date.*
+
+If a later session finds an entry wrong, it writes a new entry saying so and links
+back. Editing a dated record in place destroys the only thing it was for.
+
+Corollary, learned the hard way on 2026-09-14: every sentence of the form
+"X is currently Y" carries its own date inline, because a record that silently goes
+stale is worse than no record — it reads as current.
+
+== What belongs elsewhere
+
+[cols="1,1",options="header"]
+|===
+| Content | Home
+
+| What shipped, per release
+| `CHANGELOG.md`
+
+| Machine-readable project state and open decisions
+| `.machine_readable/STATE.a2ml`
+
+| Planned work and proof obligations
+| `ROADMAP.adoc`
+
+| A decision with lasting architectural consequence
+| `docs/decisions/` (an ADR — none written yet)
+
+| How a claim was checked, on a given day
+| here
+|===
