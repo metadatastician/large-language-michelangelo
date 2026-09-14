@@ -10,6 +10,10 @@ on:
     branches: [ "main" ]
   workflow_call:
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   call-estate-audit:
     uses: hyperpolymath/cicd-suite/.github/workflows/main-estate-audit.yml@31b5b45a89c9c05b8d20d50fd3bee56f4959952e # main
