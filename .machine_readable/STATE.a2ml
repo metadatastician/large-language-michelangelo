@@ -44,9 +44,9 @@ resolved = [
 
 [open-decisions]
 pending = [
-  { decision = "Commission roadmap 3 (prompt-driven forms) and/or 4 (research programme)", owner = "hyperpolymath", context = "explicitly parked by owner; proofs P-4/P-5 become load-bearing when 3 starts" },
-  { decision = "Enable the Zenodo<->GitHub integration for this repository", owner = "hyperpolymath", context = "BLOCKING and mine alone to do — it is an OAuth grant on a metadatastician org repo, which Claude cannot perform. It must be enabled BEFORE the v0.3.0 release is created or Zenodo never sees it and no DOI is minted." },
-  { decision = "ORCID for the Zenodo deposit", owner = "hyperpolymath", context = "CITATION.cff cannot carry it usefully without the owner supplying the identifier; it must never be guessed" },
+  { decision = "Start Chrome with the Claude extension so studio.html can be rendered", owner = "hyperpolymath", context = "RULED 2026-09-14 (R-1): the owner starts the browser and Claude drives the page, running the full checklist — Three.js render, both panes, scrub timeline, in-page llmProof.verify(), a hand-recounted revision diff, prompt box absent offline. Explicitly NOT a pasted screenshot and NOT merge-then-verify. This is the only reason PR #9 is a draft; no browser was connected when last probed." },
+  { decision = "Enable the Zenodo<->GitHub integration for this repository", owner = "hyperpolymath", context = "RULED 2026-09-14 (R-2): enable NOW, then retro-tag v0.3.0 and cut v0.4.0 on merge — two versioned DOIs under one concept DOI. Still BLOCKING and mine alone to do: an OAuth grant on a metadatastician org repo, which Claude cannot perform. It must be enabled BEFORE any release is created or Zenodo never sees it." },
+  { decision = "ORCID for the Zenodo deposit", owner = "hyperpolymath", context = "Requested 2026-09-14 alongside R-2 and NOT supplied. CITATION.cff and .zenodo.json cannot carry it without the owner pasting the identifier; it must never be guessed. Leave the field out until then." },
 ]
 
 [route-to-next]
