@@ -44,7 +44,7 @@ orders the waste); the generator is now form-agnostic too:
 * Per-form colour bootstrap: 1-bit threshold and 4-colour palette are
   luminance quartiles of the chosen form's finished colouring.
 
-== 3 · Prompt-driven forms — NEXT, uncommissioned
+== 3 · Prompt-driven forms — v0.2 SHIPPED 2026-09-14, v0.1/v0.3 outstanding
 
 The two pathways can only consume a *fixed form specification* — the
 invariant requires the form to exist before either pathway starts. So a
@@ -52,10 +52,17 @@ prompt pipeline is a **form compiler** in front of unchanged machinery.
 
 * *v0.1 — picker+params:* prompt → keyword match → parametric family + seed.
   Deterministic, offline, narrow.
-* *v0.2 — LLM-compiled spec:* the page asks Claude (artifact completion
-  capability) to compile a prompt into a scene spec — layered vectors or a
-  voxel/SDF composition — which both pathways then construct. Produces real
-  composed scenes; weak likeness for named characters.
+* *v0.2 — LLM-compiled spec:* **SHIPPED as `studio.html`, v0.4.0.** The page
+  asks Claude (the artifact `sample` capability) to compile a prompt into a
+  compact JSON *recipe* — parts drawn from three primitives in normalised
+  coordinates — which the page rasterises deterministically into the block and
+  both pathways then construct, unchanged. Produces real composed scenes; weak
+  likeness for named characters, which is the honest ceiling of a 27×27×40
+  block rather than a filter. The recipe, not the prompt, is the interface: a
+  JSON editor and an example library work with no model present, so the Pages
+  copy is fully usable offline. Revision is edit-and-diff — a follow-up prompt
+  edits the retained recipe and the page reports the changed parts and fields
+  alongside the exact count of voxels added, removed and recoloured.
 * *v0.3 — reference-image mode:* any raster (image-model output or an upload)
   quantised into cells/stroke-groups; carve and growth orders computed
   generically. Fidelity is delegated to the reference; this machinery
@@ -68,7 +75,13 @@ prompt pipeline is a **form compiler** in front of unchanged machinery.
 
 *Proof obligations attached to this item:* P-5 is the gate — a compiled form
 is admissible only if it arrives with a checkable partition witness, so the
-compiler can be wrong about likeness but never about the invariant. P-4
+compiler can be wrong about likeness but never about the invariant. As shipped,
+`studio.html` satisfies P-5's live half for free: `verifyInvariant()` re-derives
+the partition from the buffers a compiled recipe produced, exactly as it does
+for a hand-coded form. Note the limit honestly — the verifier proves the
+partition, not the sculpture, and passes on a degenerate fill where nothing is
+form and everything is waste. Emptiness and over-fill are therefore refused by
+the compiler ahead of the build, as usability guards, not as proof. P-4
 (interleaving equivalence) becomes load-bearing here too: compiled scenes
 will want layered/streamed construction orders, and the claim that any
 interleaving of the two op streams reaches the same final frame must be
@@ -91,6 +104,55 @@ over machinery whose invariants are mechanised (P-6), and the diffusion pane
 inherits P-7 — the claim "deterministic sampler ⇒ the noise block uniquely
 determines the image" must be stated precisely (ODE-flow uniqueness under
 Lipschitz conditions) rather than gestured at.
+
+== 5 · Research increments — planned 2026-09-14
+
+Small, independently valuable steps, each of which converts a stated claim into
+a checked one, or makes a checked claim citable. Ordered by value per hour, not
+by dependency. The organising rule: *every increment should either make a claim
+checkable, or make a checkable claim citable.*
+
+* *R1 — Golden determinism test.* **SHIPPED in v0.4.0**; see P-7. Retires the
+  repository's zero-test status.
+* *R2 — P-4 interleaving equivalence, in two stages.* First as a property test
+  over R1's harness — shuffle the removal order N times and assert the final
+  buffers are byte-identical — then as the mechanised proof that
+  `block ∖ removeAll = addAll` over a finite cell set, independent of order.
+  Evidence first, proof second; runtime checking is not proof.
+* *R3 — Model-tier evaluation.* Run one prompt set across the `quick`,
+  `default` and `complex` sampling tiers and measure recipe validity rate, part
+  count, fill fraction and invariant pass. This answers with data the question
+  that prompted §3 — *does a small, narrow model suffice?* — and reports n and
+  failure modes, not a headline rate.
+* *R4 — Revision-transcript export.* Export a studio session: each revision's
+  prompt, the recipe diff, and the voxel add/remove/recolour counts. This is
+  the dataset §4's addressable-revision experiment needs; without it that item
+  stays an essay rather than an experiment.
+* *R5 — Cross-pathway error taxonomy via connectivity.* Measure per-frame
+  connectivity of the partial form along the shared timeline. The asymmetry is
+  real and measurable: a Gardener partial can be disconnected — floating voxels
+  awaiting their support — where a Sculptor partial cannot be disconnected in
+  the same way. A finding about the two metaphysics, not decoration.
+* *R6 — P-6 monotonicity mechanised*, once R2 establishes the pattern.
+
+Exploratory, worth trying and not yet committed: the diffusion pane (§4, the
+largest single addition and the strongest); reference-image mode (§3 v0.3); and
+a local ONNX/WebGPU small model, which the artifact CSP forbids but local repo
+mode permits.
+
+*Mechanisation target, decided 2026-09-14:* **Idris2**. The discriminator is
+re-runnability — the estate already ships `idris2-abi-check` CI tooling, so a
+proof lands inside a gate rather than beside one.
+
+== 6 · Citation — planned 2026-09-14
+
+The project is research as much as demonstration, so each increment should be
+citable as well as checkable. Retro-tag v0.3.0, deposit via the Zenodo↔GitHub
+integration, and write the resulting DOI back into `CITATION.cff` and
+`README.adoc`. Zenodo mints a concept DOI spanning every version alongside each
+version DOI, so release cadence and research increments align from here on: a
+small step that is worth making is worth citing. Scope is the software plus a
+short technical note, linked under the one concept DOI.
 
 == P · Proof obligations
 
@@ -119,6 +181,12 @@ is not claimed as such (see `rsr-profile.a2ml`).
   Gardener's non-decreasing along the timeline; scrubbing backwards is
   re-selection, not un-removal, and the formal statement should say so.
 * *P-7 Determinism of the definition* — `generateSpecimen : Seed → Form →
-  Spec` is a function (no ambient state); currently evidenced by
-  byte-identical regeneration under test, to be proved by construction over
-  a pure PRNG.
+  Spec` is a function (no ambient state). Evidence, as of v0.4.0, is a golden
+  test rather than a claim: `test/determinism.test.mjs` runs the engine core
+  headlessly under `node --test` with no Three.js present, hashing the `type`,
+  `col` and `gkey` buffers for each (form, seed) pair against the 12
+  fingerprints committed in `test/golden.json`. The fingerprints were minted on
+  Node 26.5.0 and reproduce byte-identically on CI's Node 22.23.2 — two
+  machines and two major runtime versions — and the suite is gated on every
+  push. This discharges the *evidence* clause only; proof by construction over
+  a pure PRNG remains outstanding, and a passing golden test is not that.

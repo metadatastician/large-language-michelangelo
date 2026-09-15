@@ -1,0 +1,1549 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<title>The Studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&amp;family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+  :root{
+    --ground:#E8E7E1; --panel:#F1F0EA; --ink:#26291F; --muted:#6E7264;
+    --stone:#6F7C99; --leaf:#4F7A34; --bark:#7A5A3A; --line:#CFCEC3;
+    --scene-a:#DCDEE3; --scene-b:#DFE2D4; --scene-dark:0;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#15171A; --panel:#1C1F23; --ink:#E6E3D7; --muted:#9A9D90;
+      --stone:#9FABC4; --leaf:#84B45C; --bark:#B08A5C; --line:#31343A;
+      --scene-a:#1A1D24; --scene-b:#181D16; --scene-dark:1;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#15171A; --panel:#1C1F23; --ink:#E6E3D7; --muted:#9A9D90;
+    --stone:#9FABC4; --leaf:#84B45C; --bark:#B08A5C; --line:#31343A;
+    --scene-a:#1A1D24; --scene-b:#181D16; --scene-dark:1;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+    font-size:16.5px; line-height:1.55;
+  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 22px 64px; }
+
+  /* ---------- masthead ---------- */
+  .masthead{ text-align:center; padding:52px 12px 30px; animation:rise .7s ease both; }
+  @media (prefers-reduced-motion: reduce){ .masthead{ animation:none; } }
+  @keyframes rise{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:none;} }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:.72rem; letter-spacing:.28em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 14px;
+  }
+  h1{
+    font-family:'Marcellus', 'Times New Roman', serif; font-weight:400;
+    font-size:clamp(2.1rem, 5vw, 3.4rem); line-height:1.08; margin:0 0 18px;
+    letter-spacing:.015em; text-wrap:balance;
+  }
+  h1 .amp{ color:var(--muted); }
+  .quote{
+    font-style:italic; font-size:1.06rem; color:var(--ink);
+    max-width:34em; margin:0 auto 6px;
+  }
+  .quote .attr{ font-style:normal; font-size:.85rem; color:var(--muted); white-space:nowrap; }
+  .thesis{ color:var(--muted); max-width:38em; margin:10px auto 0; }
+
+  /* ---------- diptych ---------- */
+  .diptych{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:26px; }
+  @media (max-width:880px){ .diptych{ grid-template-columns:1fr; } }
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:4px; overflow:hidden; }
+  .panel > header{ padding:14px 18px 10px; display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .panel h2{ font-family:'Marcellus', serif; font-weight:400; font-size:1.45rem; margin:0; letter-spacing:.02em; }
+  .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:.68rem; letter-spacing:.16em;
+    text-transform:uppercase; margin:0;
+  }
+  #panel-s .tag{ color:var(--stone); }
+  #panel-g .tag{ color:var(--leaf); }
+  .stage{ position:relative; aspect-ratio:4/4.4; border-block:1px solid var(--line); }
+  .stage canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .webgl-fail{ position:absolute; inset:0; display:grid; place-content:center; padding:2em; color:var(--muted); text-align:center; }
+  .ledger{
+    font-family:'IBM Plex Mono', monospace; font-variant-numeric:tabular-nums;
+    font-size:.8rem; padding:10px 18px 12px; display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;
+  }
+  .ledger .zero{ color:var(--muted); }
+  #panel-s .live{ color:var(--stone); font-weight:500; }
+  #panel-g .live{ color:var(--leaf); font-weight:500; }
+
+  /* ---------- maths in motion ---------- */
+  .mathbox{
+    font-family:'IBM Plex Mono', monospace; font-size:.72rem; line-height:1.55;
+    font-variant-numeric:tabular-nums; color:var(--muted);
+    border-top:1px dashed var(--line); padding:10px 18px 12px;
+  }
+  #panel-s .mathbox{ box-shadow:inset 3px 0 0 var(--stone); }
+  #panel-g .mathbox{ box-shadow:inset 3px 0 0 var(--leaf); }
+  .mathbox .formula{ margin:0 0 8px; color:var(--ink); letter-spacing:.02em; }
+  #panel-s .formula .hot{ color:var(--stone); font-weight:500; }
+  #panel-g .formula .hot{ color:var(--leaf); font-weight:500; }
+  .mathbox .mrow{ margin:2px 0; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .mathbox .mval{ color:var(--ink); }
+  .mathbox .optape{ margin:8px 0 0; color:var(--ink); min-height:1.5em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ---------- controls ---------- */
+  .controls{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    margin:18px 0 8px; padding:12px 14px;
+    background:var(--panel); border:1px solid var(--line); border-radius:4px;
+  }
+  button{
+    font-family:'Alegreya Sans', system-ui, sans-serif; font-weight:500; font-size:.86rem;
+    letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:3px;
+    padding:7px 13px; cursor:pointer;
+  }
+  button:hover{ background:color-mix(in oklab, var(--ink) 8%, transparent); }
+  button:focus-visible, input:focus-visible{ outline:2px solid var(--leaf); outline-offset:2px; }
+  button[aria-pressed="true"]{ border-color:var(--stone); color:var(--stone); }
+  select{
+    font-family:'Alegreya Sans', system-ui, sans-serif; font-weight:500; font-size:.86rem;
+    letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:3px;
+    padding:7px 10px; cursor:pointer;
+  }
+  select:focus-visible{ outline:2px solid var(--leaf); outline-offset:2px; }
+  #scrub{ flex:1 1 160px; min-width:140px; accent-color:var(--leaf); height:22px; }
+  .tval{ font-family:'IBM Plex Mono', monospace; font-size:.78rem; color:var(--muted); min-width:4.2em; text-align:right; font-variant-numeric:tabular-nums; }
+
+  .invariant{
+    text-align:center; font-family:'IBM Plex Mono', monospace; font-size:.8rem;
+    color:var(--muted); margin:16px auto 0; max-width:60em; font-variant-numeric:tabular-nums;
+  }
+  #verifyline{ margin-top:6px; font-size:.72rem; }
+
+  /* ---------- explainer ---------- */
+  .explainer{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-top:44px; }
+  @media (max-width:880px){ .explainer{ grid-template-columns:1fr; } }
+  .explainer h3{
+    font-family:'IBM Plex Mono', monospace; font-weight:500; font-size:.74rem;
+    letter-spacing:.24em; text-transform:uppercase; margin:0 0 10px;
+    padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
+  .explainer .c-marble h3{ color:var(--stone); }
+  .explainer .c-seed h3{ color:var(--leaf); }
+  .explainer .c-inv h3{ color:var(--bark); }
+  .explainer p{ margin:0; font-size:.95rem; color:var(--ink); }
+  .explainer p + p{ margin-top:8px; }
+  .explainer .aside{ color:var(--muted); font-size:.88rem; }
+
+  /* ---------- not-a-trick ---------- */
+  .honesty{ max-width:52em; margin:52px auto 0; border-top:1px solid var(--line); padding-top:26px; }
+  .honesty h3{
+    font-family:'IBM Plex Mono', monospace; font-weight:500; font-size:.74rem;
+    letter-spacing:.24em; text-transform:uppercase; color:var(--bark); margin:0 0 14px;
+  }
+  .honesty p{ margin:0 0 12px; font-size:.95rem; }
+  .honesty code{
+    font-family:'IBM Plex Mono', monospace; font-size:.85em;
+    background:color-mix(in oklab, var(--ink) 7%, transparent);
+    padding:.08em .35em; border-radius:3px;
+  }
+
+  .colophon{
+    text-align:center; margin-top:52px; font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem; letter-spacing:.08em; color:var(--muted);
+  }
+
+  /* ---------- the studio workbench ---------- */
+  .studio{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:1.1rem 1.15rem 1.25rem; margin:0 0 1.4rem;
+    display:flex; flex-direction:column; gap:.85rem;
+  }
+  .studio h2{
+    font-family:'Marcellus',Georgia,serif; font-weight:400; font-size:1.15rem;
+    margin:0; letter-spacing:.01em;
+  }
+  .studio label{
+    display:block; font-size:.72rem; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 .3rem;
+  }
+  .studio textarea, .studio input[type=text], .studio select{
+    width:100%; box-sizing:border-box; background:var(--ground); color:var(--ink);
+    border:1px solid var(--line); border-radius:6px; padding:.55rem .65rem;
+    font-family:'IBM Plex Mono',ui-monospace,monospace; font-size:.82rem; line-height:1.5;
+  }
+  .studio textarea{ resize:vertical; }
+  #prompt{ min-height:3.2rem; }
+  #recipe{ min-height:13rem; white-space:pre; overflow-x:auto; tab-size:2; }
+  .studio textarea:focus-visible, .studio select:focus-visible, .studio button:focus-visible{
+    outline:2px solid var(--stone); outline-offset:2px;
+  }
+  .row{ display:flex; gap:.55rem; align-items:flex-end; flex-wrap:wrap; }
+  .row > .grow{ flex:1 1 16rem; min-width:0; }
+  .studio button{
+    font:inherit; font-size:.82rem; padding:.5rem .9rem; cursor:pointer;
+    background:var(--ground); color:var(--ink);
+    border:1px solid var(--line); border-radius:6px; white-space:nowrap;
+  }
+  .studio button:hover:not(:disabled){ border-color:var(--stone); }
+  .studio button:disabled{ opacity:.45; cursor:default; }
+  .studio button.primary{ background:var(--stone); border-color:var(--stone); color:#fff; }
+  #statusline{
+    font-size:.78rem; color:var(--muted); min-height:1.2em;
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  #statusline.bad{ color:#B23A48; }
+  .notices{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.28rem; }
+  .notices li{
+    font-size:.78rem; line-height:1.45; padding:.4rem .6rem; border-radius:5px;
+    border-left:3px solid var(--bark); background:var(--ground); color:var(--muted);
+  }
+  .notices li.err{ border-left-color:#B23A48; color:var(--ink); }
+  .diffpanel{
+    border:1px solid var(--line); border-radius:6px; background:var(--ground);
+    padding:.6rem .7rem; font-family:'IBM Plex Mono',ui-monospace,monospace;
+    font-size:.78rem; line-height:1.6; overflow-x:auto;
+  }
+  .diffpanel .dhead{
+    font-size:.7rem; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 .35rem;
+  }
+  .diffpanel .add{ color:var(--leaf); }
+  .diffpanel .del{ color:#B23A48; }
+  .diffpanel .same{ color:var(--muted); }
+  .diffpanel ul{ margin:.2rem 0 0; padding:0 0 0 1.1rem; }
+  .limits{ font-size:.86rem; }
+  .limits h2{
+    font-family:'Marcellus',Georgia,serif; font-weight:400; font-size:1.1rem; margin:0 0 .5rem;
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Describe it &middot; carve it &middot; grow it</p>
+    <h1>The Studio</h1>
+    <p class="thesis">Write a recipe &mdash; or ask for one in words &mdash; and the same form is reached from opposite directions: the left panel only ever removes, the right only ever adds. Revise it, and the page reports exactly which voxels changed.</p>
+  </header>
+
+  <main>
+    <section class="studio" aria-labelledby="studio-h">
+      <h2 id="studio-h">Compose a form</h2>
+
+      <div id="prompt-row" hidden>
+        <label for="prompt">Ask for a form in words</label>
+        <div class="row">
+          <div class="grow"><textarea id="prompt" rows="2" placeholder="an anime-styled aeroplane tumbling out of control"></textarea></div>
+          <button id="btn-compile" class="primary" type="button">Compile</button>
+          <button id="btn-stop" type="button" hidden>Stop</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="grow">
+          <label for="sel-example">Example recipes</label>
+          <select id="sel-example"></select>
+        </div>
+        <button id="btn-example" type="button">Load example</button>
+      </div>
+
+      <div>
+        <label for="recipe">Recipe &mdash; the page&rsquo;s real interface</label>
+        <textarea id="recipe" rows="14" spellcheck="false" aria-describedby="statusline"></textarea>
+      </div>
+
+      <div class="row">
+        <button id="btn-build" class="primary" type="button">Build this recipe</button>
+        <button id="btn-revert" type="button">Revert to last built</button>
+        <span id="statusline" role="status" aria-live="polite"></span>
+      </div>
+
+      <ul id="notices" class="notices" aria-label="Compiler notices"></ul>
+      <div id="diff" class="diffpanel" hidden aria-label="What changed since the previous build"></div>
+    </section>
+
+    <section class="diptych" aria-label="Two live carving and growing scenes">
+      <article class="panel" id="panel-s">
+        <header>
+          <h2>The Sculptor</h2>
+          <p class="tag">Per forza di levare &middot; by removal only</p>
+        </header>
+        <div class="stage"><canvas id="cv-s" aria-label="A marble block being chiselled away to reveal the compiled form"></canvas></div>
+        <footer class="ledger"><span><span class="live" id="led-s">0</span> removals</span><span class="zero">0 additions</span></footer>
+        <div class="mathbox" aria-label="Live render mathematics, Sculptor">
+          <p class="formula">frame(t) = draw( marble[ 0 &hellip; N&minus;k ] ) &cup; draw( <span class="hot">form[ ALL ]</span> )</p>
+          <p class="mrow"><span>marble instances drawn</span> <span class="mval" id="mb-s-waste">&mdash;</span></p>
+          <p class="mrow"><span>form instances drawn</span> <span class="mval" id="mb-s-tree">&mdash;</span></p>
+          <p class="mrow"><span>triangles this frame <span aria-hidden="true">&#9660;</span></span> <span class="mval" id="mb-s-tri">&mdash;</span></p>
+          <p class="optape" id="tape-s">awaiting the first stroke</p>
+        </div>
+      </article>
+      <article class="panel" id="panel-g">
+        <header>
+          <h2>The Gardener</h2>
+          <p class="tag">Per via di porre &middot; by addition only</p>
+        </header>
+        <div class="stage"><canvas id="cv-g" aria-label="The compiled form growing voxel by voxel from a bare field"></canvas></div>
+        <footer class="ledger"><span class="zero">0 removals</span><span><span class="live" id="led-g">0</span> additions</span></footer>
+        <div class="mathbox" aria-label="Live render mathematics, Gardener">
+          <p class="formula">frame(t) = draw( <span class="hot">form[ 0 &hellip; k ]</span> ) &nbsp;&mdash; and no other term</p>
+          <p class="mrow"><span>form instances drawn</span> <span class="mval" id="mb-g-tree">&mdash;</span></p>
+          <p class="mrow"><span>hidden meshes in scene</span> <span class="mval">0 &mdash; nothing to unmask</span></p>
+          <p class="mrow"><span>triangles this frame <span aria-hidden="true">&#9650;</span></span> <span class="mval" id="mb-g-tri">&mdash;</span></p>
+          <p class="optape" id="tape-g">awaiting the first voxel</p>
+        </div>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="btn-play">Pause</button>
+      <input id="scrub" type="range" min="0" max="1" step="0.0005" value="0" aria-label="Shared timeline for both panels">
+      <span class="tval" id="tval">0.0%</span>
+      <button id="btn-speed" aria-label="Playback speed">1&times;</button>
+      <button id="btn-xray" aria-pressed="false">X-ray marble</button>
+      <button id="btn-seed">New specimen</button>
+    </div>
+    <p class="invariant" id="invariant"></p>
+    <p class="invariant" id="verifyline"></p>
+
+    <section class="explainer limits" aria-labelledby="limits-h">
+      <h2 id="limits-h">What this block can and cannot say</h2>
+      <p>The block is 27 cells wide and deep by 40 tall &mdash; 29,160 in all. Recognisable silhouettes work: aircraft, animals, chairs, towers, instruments. Faces, lettering, named characters and fine texture do not, at any prompt, because there are not enough cells to carry them. Style survives as palette and proportion, not as line or brushwork.</p>
+      <p>The recipe, not the prompt, is this page&rsquo;s interface. A recipe is a few hundred bytes of JSON naming capsules, ellipsoids and boxes in a normalised cube; the page fits it to the block and rasterises it the same way every time. That is why a revision can be counted rather than merely observed, and why the whole page keeps working when no model is available.</p>
+      <p>The verifier below re-derives disjointness, completeness and convergence from the live buffers after every build. It proves the partition, never the likeness: a recipe can be wrong about the subject and still be right about the invariant. Asking for a form in words is paid for by whoever is viewing, and asks consent the first time.</p>
+    </section>
+  </main>
+
+  <footer class="colophon">specimen &#8470; <span id="seed-no"></span> &middot; one shared definition &middot; compiled, carved &amp; grown in your browser</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  if (!window.THREE || !window.WebGLRenderingContext){ failAll(); return; }
+
+  // ===== BEGIN SHARED ENGINE =====
+  // ---------- deterministic utilities ----------
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function makeNoise(seed){
+    var r=mulberry32(seed), p=[], i, j, tmp;
+    for(i=0;i<256;i++) p[i]=i;
+    for(i=255;i>0;i--){ j=(r()*(i+1))|0; tmp=p[i]; p[i]=p[j]; p[j]=tmp; }
+    var perm=new Uint8Array(512); for(i=0;i<512;i++) perm[i]=p[i&255];
+    function h(x,y,z){ return perm[(perm[(perm[x&255]+y)&255]+z)&255]/255; }
+    return function(x,y,z){
+      var xi=Math.floor(x), yi=Math.floor(y), zi=Math.floor(z);
+      var xf=x-xi, yf=y-yi, zf=z-zi;
+      var u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf), w=zf*zf*(3-2*zf);
+      var c000=h(xi,yi,zi), c100=h(xi+1,yi,zi), c010=h(xi,yi+1,zi), c110=h(xi+1,yi+1,zi);
+      var c001=h(xi,yi,zi+1), c101=h(xi+1,yi,zi+1), c011=h(xi,yi+1,zi+1), c111=h(xi+1,yi+1,zi+1);
+      var x00=c000+(c100-c000)*u, x10=c010+(c110-c010)*u, x01=c001+(c101-c001)*u, x11=c011+(c111-c011)*u;
+      var y0=x00+(x10-x00)*v, y1=x01+(x11-x01)*v;
+      return y0+(y1-y0)*w;
+    };
+  }
+  function hexToRGB(hex){ return [ (hex>>16&255)/255, (hex>>8&255)/255, (hex&255)/255 ]; }
+  function mix(a,b,t){ return [ a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t ]; }
+
+  // ---------- grid ----------
+  var HX=13, HZ=13, HY=40;
+  var NX=2*HX+1, NZ=2*HZ+1, NY=HY, NXZ=NX*NZ, NCELL=NXZ*NY;
+  function cellIndex(xi, iy, zi){ return iy*NXZ + zi*NX + xi; }   // xi,zi are 0-based
+  function cellX(ci){ return (ci % NX) - HX; }
+  function cellZ(ci){ return (((ci / NX)|0) % NZ) - HZ; }
+  function cellY(ci){ return (ci / NXZ)|0; }
+
+
+  // the marble paints every cell the form left untouched — identical for all forms
+  function paintMarble(noise, type, col){
+    var marA=hexToRGB(0xEDEBE4), marB=hexToRGB(0xDBD9D1);
+    var veinA=hexToRGB(0xAEB4C2), veinB=hexToRGB(0xC4C9D4);
+    var ci, cx, cy, cz;
+    for(ci=0; ci<NCELL; ci++){
+      if(type[ci]!==0) continue;
+      cx=cellX(ci); cy=cellY(ci)+0.5; cz=cellZ(ci);
+      var v1=noise(cx*0.13+31, cy*0.13, cz*0.13);
+      var ridg=Math.abs(noise(cx*0.21, cy*0.21+13, cz*0.21)-0.5)*2;
+      var mc=(ridg<0.10)? mix(veinA,veinB,v1) : mix(marA,marB,v1);
+      col[ci*3]=mc[0]; col[ci*3+1]=mc[1]; col[ci*3+2]=mc[2];
+    }
+  }
+
+  // ---------- specimen generation (shared by both panes) ----------
+  function generateSpecimen(seed, formKey){
+    var form=FORMS[formKey];
+    var rnd = mulberry32(seed);
+    var noise = makeNoise((seed ^ 0x9E3779B9)>>>0);
+    var type=new Uint8Array(NCELL);
+    var col=new Float32Array(NCELL*3);
+    var gkey=new Float32Array(NCELL);
+    form.fill(seed, rnd, noise, type, col, gkey);
+    paintMarble(noise, type, col);
+
+    // BFS: geodesic distance from the form through the waste
+    var dist=new Int16Array(NCELL); dist.fill(-1);
+    var queue=new Int32Array(NCELL), qh=0, qt=0, ci2;
+    for(ci2=0; ci2<NCELL; ci2++) if(type[ci2]!==0){ dist[ci2]=0; queue[qt++]=ci2; }
+    while(qh<qt){
+      var c0=queue[qh++];
+      var x0=c0%NX, z0=((c0/NX)|0)%NZ, y0=(c0/NXZ)|0, d1=dist[c0]+1;
+      if(x0>0     && dist[c0-1]<0   && type[c0-1]===0)  { dist[c0-1]=d1;   queue[qt++]=c0-1; }
+      if(x0<NX-1  && dist[c0+1]<0   && type[c0+1]===0)  { dist[c0+1]=d1;   queue[qt++]=c0+1; }
+      if(z0>0     && dist[c0-NX]<0  && type[c0-NX]===0) { dist[c0-NX]=d1;  queue[qt++]=c0-NX; }
+      if(z0<NZ-1  && dist[c0+NX]<0  && type[c0+NX]===0) { dist[c0+NX]=d1;  queue[qt++]=c0+NX; }
+      if(y0>0     && dist[c0-NXZ]<0 && type[c0-NXZ]===0){ dist[c0-NXZ]=d1; queue[qt++]=c0-NXZ; }
+      if(y0<NY-1  && dist[c0+NXZ]<0 && type[c0+NXZ]===0){ dist[c0+NXZ]=d1; queue[qt++]=c0+NXZ; }
+    }
+
+    // order the two op streams
+    var treeCells=[], wasteCells=[];
+    for(ci2=0; ci2<NCELL; ci2++){
+      if(type[ci2]===0) wasteCells.push(ci2); else treeCells.push(ci2);
+    }
+    treeCells.sort(function(a,b){ return gkey[a]-gkey[b]; });
+    var prio=new Float32Array(NCELL), sweep=new Float32Array(NCELL), wi, cw;
+    for(wi=0; wi<wasteCells.length; wi++){
+      cw=wasteCells[wi];
+      var wx=cellX(cw), wy=cellY(cw)+0.5, wz=cellZ(cw);
+      var dv=dist[cw]<0?40:dist[cw];
+      prio[cw]=dv + (noise(wx*0.33+51, wy*0.33, wz*0.33)-0.5)*1.7;
+      sweep[cw]=(NY-wy)*0.45 + ((Math.atan2(wz,wx)+Math.PI)/(2*Math.PI))*5 + noise(wx*0.7, wy*0.7+29, wz*0.7)*1.1;
+    }
+    wasteCells.sort(function(a,b){ return (prio[b]-prio[a]) || (sweep[a]-sweep[b]); });
+
+    return { seed:seed, form:formKey, noun:form.noun, type:type, col:col, treeOrder:treeCells, removeOrder:wasteCells };
+  }
+
+  // ---------- pane scaffolding ----------
+  function failAll(){
+    document.querySelectorAll('.stage').forEach(function(st){
+      var d=document.createElement('div'); d.className='webgl-fail';
+      d.textContent='This demonstration needs WebGL, which is unavailable in this browser.';
+      st.appendChild(d);
+    });
+  }
+
+  var sharedGeo = new THREE.BoxGeometry(0.96, 0.96, 0.96);
+  var chipGeo   = new THREE.BoxGeometry(0.55, 0.55, 0.55);
+  var DPR = Math.min(window.devicePixelRatio||1, 1.75);
+
+  function makePane(canvas){
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true});
+    } catch(e){ return null; }
+    renderer.setPixelRatio(DPR);
+    var scene=new THREE.Scene();
+    var camera=new THREE.PerspectiveCamera(35, 1, 1, 400);
+    var hemi=new THREE.HemisphereLight(0xffffff, 0x8a8a7a, 0.95);
+    var key=new THREE.DirectionalLight(0xfff1dd, 1.15); key.position.set(38,62,20);
+    var rim=new THREE.DirectionalLight(0xbcc8e6, 0.35); rim.position.set(-45,28,-38);
+    scene.add(hemi, key, rim);
+    return { renderer:renderer, scene:scene, camera:camera, hemi:hemi, key:key, rim:rim, canvas:canvas };
+  }
+
+  var paneS = makePane(document.getElementById('cv-s'));
+  var paneG = makePane(document.getElementById('cv-g'));
+  if(!paneS || !paneG){ failAll(); return; }
+
+  // plinths
+  var plinthS = new THREE.Mesh(new THREE.BoxGeometry(46,2.6,46), new THREE.MeshLambertMaterial({color:0xB9B6AC}));
+  plinthS.position.y=-1.3; paneS.scene.add(plinthS);
+  var plinthG = new THREE.Mesh(new THREE.BoxGeometry(46,2.6,46), new THREE.MeshLambertMaterial({color:0x4E3E2C}));
+  plinthG.position.y=-1.3; paneG.scene.add(plinthG);
+
+  // ---------- per-specimen meshes ----------
+  var spec=null, Nw=0, Nt=0;
+  var wasteMesh=null, treeMeshS=null, gardenMesh=null, rubbleMesh=null, chipMesh=null;
+  var gardenFull=null, gardenLum=null;   // full colors + luminance cache
+  var rubbleMax=0;
+  var CHIP_POOL=240, chips=[];
+  var tmpM=new THREE.Matrix4(), tmpC=new THREE.Color();
+  var tmpP=new THREE.Vector3(), tmpQ=new THREE.Quaternion(), tmpS=new THREE.Vector3(), tmpE=new THREE.Euler();
+
+  function voxelInstancedMesh(cells, colArr, reversed){
+    var n=cells.length;
+    var mesh=new THREE.InstancedMesh(sharedGeo, new THREE.MeshLambertMaterial({color:0xffffff}), n);
+    var i, ci;
+    for(i=0;i<n;i++){
+      ci = reversed ? cells[n-1-i] : cells[i];
+      tmpM.identity().setPosition(cellX(ci), cellY(ci)+0.5, cellZ(ci));
+      mesh.setMatrixAt(i, tmpM);
+      mesh.setColorAt(i, tmpC.setRGB(colArr[ci*3], colArr[ci*3+1], colArr[ci*3+2]));
+    }
+    mesh.instanceMatrix.needsUpdate=true;
+    if(mesh.instanceColor) mesh.instanceColor.needsUpdate=true;
+    mesh.frustumCulled=false;
+    return mesh;
+  }
+
+  function destroySpecimen(){
+    [ [paneS,wasteMesh], [paneS,treeMeshS], [paneG,gardenMesh], [paneS,rubbleMesh], [paneS,chipMesh] ]
+      .forEach(function(pair){
+        if(pair[1]){ pair[0].scene.remove(pair[1]); pair[1].material.dispose(); pair[1].dispose(); }
+      });
+    wasteMesh=treeMeshS=gardenMesh=rubbleMesh=chipMesh=null;
+  }
+
+  var currentForm='tree';
+  function buildSpecimen(seed, formKey){
+    if(formKey) currentForm=formKey;
+    destroySpecimen();
+    spec=generateSpecimen(seed, currentForm);
+    Nw=spec.removeOrder.length; Nt=spec.treeOrder.length;
+
+    wasteMesh = voxelInstancedMesh(spec.removeOrder, spec.col, true);   // remaining = prefix
+    treeMeshS = voxelInstancedMesh(spec.treeOrder,  spec.col, false);   // always fully present
+    paneS.scene.add(wasteMesh, treeMeshS);
+
+    gardenMesh = voxelInstancedMesh(spec.treeOrder, spec.col, false);
+    gardenMesh.count=0;
+    paneG.scene.add(gardenMesh);
+    gardenFull=new Float32Array(Nt*3); gardenLum=new Float32Array(Nt);
+    var i, ci;
+    for(i=0;i<Nt;i++){
+      ci=spec.treeOrder[i];
+      var r=spec.col[ci*3], g=spec.col[ci*3+1], b=spec.col[ci*3+2];
+      gardenFull[i*3]=r; gardenFull[i*3+1]=g; gardenFull[i*3+2]=b;
+      gardenLum[i]=0.2126*r+0.7152*g+0.0722*b;
+    }
+    gStage=-1;
+    derivePalette();
+
+    // deterministic rubble field (one persistent chip per 6 removals)
+    rubbleMax=Math.min(Math.floor(Nw/6), 4200);
+    rubbleMesh=new THREE.InstancedMesh(chipGeo, new THREE.MeshLambertMaterial({color:0xffffff}), rubbleMax);
+    var rr=mulberry32((seed ^ 0x0BB1E5)>>>0);
+    for(i=0;i<rubbleMax;i++){
+      var ang=rr()*Math.PI*2;
+      var rad=15 + rr()*6.5*(0.35+0.65*Math.sqrt(i/rubbleMax));
+      tmpP.set(Math.cos(ang)*rad, 0.32+rr()*0.42, Math.sin(ang)*rad);
+      tmpE.set(rr()*3.1, rr()*3.1, rr()*3.1); tmpQ.setFromEuler(tmpE);
+      var sc=0.35+rr()*0.55; tmpS.set(sc,sc,sc);
+      tmpM.compose(tmpP,tmpQ,tmpS);
+      rubbleMesh.setMatrixAt(i,tmpM);
+      var shade=0.78+rr()*0.2;
+      rubbleMesh.setColorAt(i, tmpC.setRGB(0.84*shade,0.83*shade,0.80*shade));
+    }
+    rubbleMesh.instanceMatrix.needsUpdate=true;
+    if(rubbleMesh.instanceColor) rubbleMesh.instanceColor.needsUpdate=true;
+    rubbleMesh.frustumCulled=false; rubbleMesh.count=0;
+    paneS.scene.add(rubbleMesh);
+
+    // transient chip pool
+    chipMesh=new THREE.InstancedMesh(chipGeo, new THREE.MeshLambertMaterial({color:0xffffff}), CHIP_POOL);
+    chips=[]; for(i=0;i<CHIP_POOL;i++){ chips.push({alive:false}); hideChip(i); }
+    chipMesh.instanceMatrix.needsUpdate=true; chipMesh.frustumCulled=false;
+    paneS.scene.add(chipMesh);
+
+    if(xray) applyXray(true);
+    mbSt.textContent=Nt.toLocaleString('en-GB')+' — always, occluded';
+    document.getElementById('seed-no').textContent=String(seed);
+    document.getElementById('invariant').textContent =
+      'One '+spec.noun+' · '+Nt.toLocaleString('en-GB')+' voxels — carved free of a '+
+      (Nt+Nw).toLocaleString('en-GB')+'-voxel block on the left ('+Nw.toLocaleString('en-GB')+
+      ' removals) · assembled from a bare field on the right ('+Nt.toLocaleString('en-GB')+' additions).';
+    paneS.canvas.setAttribute('aria-label','A marble block being chiselled away to reveal a '+spec.noun);
+    paneG.canvas.setAttribute('aria-label','A '+spec.noun+' growing voxel by voxel from a bare field');
+    kS=-1; kG=-1;
+    runVerify();
+  }
+
+  function hideChip(i){ tmpM.makeScale(0,0,0); chipMesh.setMatrixAt(i,tmpM); }
+
+  // ---------- gardener colour-depth bootstrap ----------
+  var gStage=-1;
+  var quant=[hexToRGB(0x3F3325), hexToRGB(0x567F35), hexToRGB(0x9BB565), hexToRGB(0xE6E2D2)];
+  var oneA=hexToRGB(0x262A20), oneB=hexToRGB(0xE9E5D6), oneThr=0.40;
+  // the 1-bit threshold and the 4-colour palette are derived from the form
+  // itself — luminance quartiles of the finished colouring — so every form
+  // quantises against its own gamut; empty buckets borrow a neighbour's mean
+  function derivePalette(){
+    var lums=Array.prototype.slice.call(gardenLum).sort(function(a,b){ return a-b; });
+    var q1=lums[(Nt*0.25)|0], q2=lums[(Nt*0.5)|0], q3=lums[(Nt*0.75)|0];
+    oneThr=q2;
+    var acc=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], i, j, bkt;
+    for(i=0;i<Nt;i++){
+      var L=gardenLum[i];
+      bkt = L<q1?0 : L<q2?1 : L<q3?2 : 3;
+      acc[bkt][0]+=gardenFull[i*3]; acc[bkt][1]+=gardenFull[i*3+1];
+      acc[bkt][2]+=gardenFull[i*3+2]; acc[bkt][3]++;
+    }
+    var out=[null,null,null,null];
+    for(i=0;i<4;i++) if(acc[i][3]>0)
+      out[i]=[acc[i][0]/acc[i][3], acc[i][1]/acc[i][3], acc[i][2]/acc[i][3]];
+    for(i=0;i<4;i++) if(!out[i]){
+      for(j=1;j<4 && !out[i];j++){
+        if(i-j>=0 && out[i-j]) out[i]=out[i-j];
+        else if(i+j<4 && out[i+j]) out[i]=out[i+j];
+      }
+      if(!out[i]) out[i]=[0.5,0.5,0.5];
+    }
+    quant=out;
+  }
+  function stageFor(t){ return t<0.25?0 : t<0.5?1 : t<0.75?2 : 3; }
+  function applyStage(st){
+    var i, r,g,b;
+    for(i=0;i<Nt;i++){
+      if(st===0){ var c1=gardenLum[i]>oneThr?oneB:oneA; r=c1[0]; g=c1[1]; b=c1[2]; }
+      else if(st===1){ r=g=b=gardenLum[i]; }
+      else if(st===2){
+        var fr=gardenFull[i*3], fg=gardenFull[i*3+1], fb=gardenFull[i*3+2];
+        var bestD=1e9, bq=quant[0], q, qi;
+        for(qi=0;qi<4;qi++){ q=quant[qi];
+          var dd=(fr-q[0])*(fr-q[0])+(fg-q[1])*(fg-q[1])+(fb-q[2])*(fb-q[2]);
+          if(dd<bestD){ bestD=dd; bq=q; } }
+        r=bq[0]; g=bq[1]; b=bq[2];
+      }
+      else { r=gardenFull[i*3]; g=gardenFull[i*3+1]; b=gardenFull[i*3+2]; }
+      gardenMesh.setColorAt(i, tmpC.setRGB(r,g,b));
+    }
+    if(gardenMesh.instanceColor) gardenMesh.instanceColor.needsUpdate=true;
+  }
+
+  // ---------- X-ray ----------
+  var xray=false;
+  function applyXray(on){
+    var m=wasteMesh.material;
+    m.transparent=on; m.opacity=on?0.13:1; m.depthWrite=!on; m.needsUpdate=true;
+  }
+
+  // ---------- theme ----------
+  function applyTheme(){
+    var cs=getComputedStyle(document.documentElement);
+    var dark=parseInt(cs.getPropertyValue('--scene-dark'))===1;
+    var bgA=cs.getPropertyValue('--scene-a').trim()||'#DCDEE3';
+    var bgB=cs.getPropertyValue('--scene-b').trim()||'#DFE2D4';
+    [[paneS,bgA],[paneG,bgB]].forEach(function(pb){
+      pb[0].scene.background=new THREE.Color(pb[1]);
+      pb[0].scene.fog=new THREE.Fog(new THREE.Color(pb[1]), 95, 175);
+      pb[0].hemi.intensity=dark?0.55:0.95;
+      pb[0].key.intensity=dark?1.4:1.15;
+      pb[0].rim.intensity=dark?0.5:0.35;
+    });
+  }
+  applyTheme();
+  try{
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+    new MutationObserver(applyTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+  }catch(e){}
+
+  // ---------- timeline ----------
+  var RM=false;
+  try{ RM=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+  var DURATION=34, speeds=[1,2,4,0.5], speedIdx=0;
+  var t=RM?0.62:0, playing=!RM, scrubbing=false, holdUntil=0;
+  var kS=-1, kG=-1;
+  var ledS=document.getElementById('led-s'), ledG=document.getElementById('led-g');
+  var scrub=document.getElementById('scrub'), tval=document.getElementById('tval');
+  var btnPlay=document.getElementById('btn-play');
+
+  // ---------- maths-in-motion instruments ----------
+  var mbSw=document.getElementById('mb-s-waste'), mbSt=document.getElementById('mb-s-tree'),
+      mbStri=document.getElementById('mb-s-tri'), tapeS=document.getElementById('tape-s'),
+      mbGt=document.getElementById('mb-g-tree'), mbGtri=document.getElementById('mb-g-tri'),
+      tapeG=document.getElementById('tape-g');
+  var triS=0, triG=0, triShown=0;
+  var verifyLine=document.getElementById('verifyline');
+  function fmt(n){ return n.toLocaleString('en-GB'); }
+  function cellStr(ci){ return '('+cellX(ci)+', '+cellY(ci)+', '+cellZ(ci)+')'; }
+
+  // re-derive the page's claims from the live buffers, never from captions:
+  // the two op streams must partition the block (disjoint + complete) and the
+  // Gardener's additions must be exactly the cells the Sculptor never removes
+  function verifyInvariant(){
+    var seen=new Uint8Array(NCELL), i, ci;
+    var dupForm=0, dupWaste=0, formNotForm=0, wasteNotWaste=0, missing=0, both=0;
+    for(i=0;i<Nt;i++){ ci=spec.treeOrder[i];
+      if(seen[ci]&1) dupForm++; seen[ci]|=1;
+      if(spec.type[ci]===0) formNotForm++; }
+    for(i=0;i<Nw;i++){ ci=spec.removeOrder[i];
+      if(seen[ci]&2) dupWaste++; seen[ci]|=2;
+      if(spec.type[ci]!==0) wasteNotWaste++; }
+    for(ci=0;ci<NCELL;ci++){ if(seen[ci]===0) missing++; else if(seen[ci]===3) both++; }
+    return {
+      disjoint: both===0 && dupForm===0 && dupWaste===0,
+      complete: missing===0 && (Nt+Nw)===NCELL,
+      convergent: formNotForm===0 && wasteNotWaste===0,
+      counts: { form:Nt, waste:Nw, block:NCELL }
+    };
+  }
+  function runVerify(){
+    var v=verifyInvariant(), tick='✓', cross='✗';
+    verifyLine.textContent='verified against live buffers — streams disjoint '+
+      (v.disjoint?tick:cross)+' · union complete '+(v.complete?tick:cross)+
+      ' ('+fmt(Nt)+' + '+fmt(Nw)+' = '+fmt(NCELL)+') · pathways convergent '+
+      (v.convergent?tick:cross);
+  }
+
+  // read-only live counts for sceptics (see the "Not a trick" section)
+  window.llmProof = {
+    get sculptor(){ return { marbleInstancesDrawn:wasteMesh.count, formInstancesDrawn:treeMeshS.count,
+      removalsApplied:kS, trianglesLastFrame:triS }; },
+    get gardener(){ return { formInstancesDrawn:gardenMesh.count, additionsApplied:kG,
+      hiddenMeshesInScene:0, trianglesLastFrame:triG }; },
+    verify: verifyInvariant
+  };
+
+  function setCounts(force){
+    var nkS=Math.round(t*Nw), nkG=Math.round(t*Nt);
+    if(nkS!==kS || force){
+      // transient chips on forward progress
+      if(playing && nkS>kS && kS>=0){
+        var spawn=Math.min(nkS-kS, 4), j;
+        for(j=0;j<spawn;j++) spawnChip(spec.removeOrder[Math.min(kS+j, Nw-1)]);
+      }
+      kS=nkS;
+      wasteMesh.count=Nw-kS;
+      rubbleMesh.count=Math.min(Math.floor(kS/6), rubbleMax);
+      ledS.textContent=kS.toLocaleString('en-GB');
+      mbSw.textContent=fmt(Nw)+' − '+fmt(kS)+' = '+fmt(Nw-kS);
+      tapeS.textContent = kS>0
+        ? '− stroke №'+fmt(kS)+' · cell '+cellStr(spec.removeOrder[kS-1])
+        : 'awaiting the first stroke';
+    }
+    if(nkG!==kG || force){
+      kG=nkG; gardenMesh.count=kG; ledG.textContent=kG.toLocaleString('en-GB');
+      mbGt.textContent=fmt(kG)+' of '+fmt(Nt);
+      tapeG.textContent = kG>0
+        ? '+ voxel №'+fmt(kG)+' · cell '+cellStr(spec.treeOrder[kG-1])
+        : 'awaiting the first voxel';
+    }
+    var st=stageFor(t);
+    if(st!==gStage){ gStage=st; applyStage(st); }
+    if(!scrubbing) scrub.value=String(t);
+    tval.textContent=(t*100).toFixed(1)+'%';
+  }
+
+  function spawnChip(ci){
+    var i;
+    for(i=0;i<CHIP_POOL;i++) if(!chips[i].alive) break;
+    if(i===CHIP_POOL) return;
+    var x=cellX(ci), y=cellY(ci)+0.5, z=cellZ(ci);
+    var hn=Math.hypot(x,z)||1;
+    chips[i]={alive:true, x:x, y:y, z:z,
+      vx:(x/hn)*(3+Math.random()*4), vy:4+Math.random()*5, vz:(z/hn)*(3+Math.random()*4),
+      rx:Math.random()*3, ry:Math.random()*3, rz:Math.random()*3,
+      wx:(Math.random()-0.5)*8, wy:(Math.random()-0.5)*8, wz:(Math.random()-0.5)*8,
+      s:0.5+Math.random()*0.5};
+    var shade=0.8+Math.random()*0.18;
+    chipMesh.setColorAt(i, tmpC.setRGB(0.86*shade,0.85*shade,0.82*shade));
+    if(chipMesh.instanceColor) chipMesh.instanceColor.needsUpdate=true;
+  }
+  function updateChips(dt){
+    var any=false, i, c;
+    for(i=0;i<CHIP_POOL;i++){
+      c=chips[i];
+      if(!c.alive) continue;
+      any=true;
+      c.vy-=26*dt; c.x+=c.vx*dt; c.y+=c.vy*dt; c.z+=c.vz*dt;
+      c.rx+=c.wx*dt; c.ry+=c.wy*dt; c.rz+=c.wz*dt;
+      if(c.y<0.4){ c.alive=false; hideChip(i); continue; }
+      tmpE.set(c.rx,c.ry,c.rz); tmpQ.setFromEuler(tmpE);
+      tmpP.set(c.x,c.y,c.z); tmpS.set(c.s,c.s,c.s);
+      tmpM.compose(tmpP,tmpQ,tmpS); chipMesh.setMatrixAt(i,tmpM);
+    }
+    if(any) chipMesh.instanceMatrix.needsUpdate=true;
+  }
+
+  // ---------- sizing ----------
+  function sizePane(p){
+    var w=p.canvas.clientWidth, h=p.canvas.clientHeight;
+    if(w===0||h===0) return;
+    p.renderer.setSize(w,h,false);
+    p.camera.aspect=w/h; p.camera.updateProjectionMatrix();
+  }
+  var ro=new ResizeObserver(function(){ sizePane(paneS); sizePane(paneG); });
+  ro.observe(paneS.canvas.parentElement); ro.observe(paneG.canvas.parentElement);
+  sizePane(paneS); sizePane(paneG);
+
+  // ---------- main loop ----------
+  function startLoop(){
+    var last=performance.now(), az=0;
+    function frame(now){
+      var dt=Math.min((now-last)/1000, 0.1); last=now;
+      if(playing && !scrubbing){
+        if(holdUntil>0){
+          if(now>=holdUntil){ holdUntil=0; t=0; }
+        } else {
+          t+=dt*speeds[speedIdx]/DURATION;
+          if(t>=1){ t=1; if(!RM) holdUntil=now+3200; }
+        }
+      }
+      setCounts(false);
+      updateChips(dt);
+      if(!RM) az+=dt*0.06;
+      var cy=15.5, r=80, el=0.30;
+      [paneS,paneG].forEach(function(p){
+        p.camera.position.set(Math.sin(az)*r*Math.cos(el), cy+r*Math.sin(el), Math.cos(az)*r*Math.cos(el));
+        p.camera.lookAt(0,cy,0);
+        p.renderer.render(p.scene, p.camera);
+      });
+      triS=paneS.renderer.info.render.triangles;
+      triG=paneG.renderer.info.render.triangles;
+      if(now-triShown>250){
+        triShown=now;
+        mbStri.textContent=fmt(triS);
+        mbGtri.textContent=fmt(triG);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  // ===== END SHARED ENGINE =====
+
+  // ---------- the studio: recipes are compiled, not drawn ----------
+  //
+  // A recipe names parts in a normalised cube: x, y and z each run -1..1 with
+  // +y up. The page measures the posed bounding box and applies ONE uniform
+  // scale and offset into the 27 x 27 x 40 block, so a recipe never mentions
+  // grid dimensions and is never out of bounds by construction.
+  //
+  // Coordinates are absolute in that cube. `parent` does not move a part; it
+  // orders growth, so a wing starts growing when the fuselage reaches its root
+  // rather than after the whole fuselage is finished.
+  //
+  // Overlap resolves by NEAREST SURFACE, not by declaration order: among the
+  // parts covering a cell, the one with the greatest (least negative) signed
+  // distance owns it, ties broken by priority then instance index. That makes
+  // the result independent of how the model happened to order the array, which
+  // is what makes a revision diff mean something.
+
+  var FIT_MARGIN = 0.94;
+  var MIN_CELLS  = 0.55;    // a feature thinner than this falls between cell centres
+  var FILL_LO    = 0.01;    // below this the form is too thin to read
+  var FILL_HI    = 0.35;    // above this the Sculptor has too little marble to remove
+  var FILL_MAX   = 0.70;    // above this we refuse outright
+
+  var SHAPE_ALIAS = {
+    capsule:'capsule', cylinder:'capsule', tube:'capsule', rod:'capsule',
+    cone:'capsule', spire:'capsule', limb:'capsule', line:'capsule', segment:'capsule',
+    ellipsoid:'ellipsoid', sphere:'ellipsoid', ball:'ellipsoid', blob:'ellipsoid',
+    dome:'ellipsoid', disc:'ellipsoid', disk:'ellipsoid',
+    box:'box', cube:'box', block:'box', slab:'box', plate:'box', panel:'box', wedge:'box'
+  };
+
+  var FALLBACK_PALETTE = { body:'#C8CBD2', trim:'#B7583F', dark:'#3A3F4B', light:'#E8E6DE' };
+
+  function isNum(v){ return typeof v==='number' && isFinite(v); }
+  function num(v, d){ return isNum(v) ? v : d; }
+  function clamp(v, lo, hi){ return v<lo?lo:(v>hi?hi:v); }
+
+  function vec3(v, d0, d1, d2){
+    if(Array.isArray(v)) return [num(v[0],d0), num(v[1],d1), num(v[2],d2)];
+    if(isNum(v)) return [v, v, v];
+    return [d0, d1, d2];
+  }
+  function radii2(v, d){
+    if(Array.isArray(v)) return [Math.abs(num(v[0],d)), Math.abs(num(v[1], num(v[0],d)))];
+    if(isNum(v)) return [Math.abs(v), Math.abs(v)];
+    return [d, d];
+  }
+
+  function parseHex(h){
+    if(typeof h!=='string') return null;
+    var s=h.trim().replace(/^#/,'');
+    if(s.length===3) s=s[0]+s[0]+s[1]+s[1]+s[2]+s[2];
+    if(!/^[0-9a-fA-F]{6}$/.test(s)) return null;
+    return [parseInt(s.slice(0,2),16)/255, parseInt(s.slice(2,4),16)/255, parseInt(s.slice(4,6),16)/255];
+  }
+
+  // integer hash -> [0,1), keyed on grid position so colour jitter is stable
+  // across revisions instead of drifting with a running random.
+  function hash01(a, b, c){
+    var h = (a*73856093) ^ (b*19349663) ^ (c*83492791);
+    h = Math.imul(h ^ (h>>>15), 2246822507);
+    h = Math.imul(h ^ (h>>>13), 3266489909);
+    return ((h ^ (h>>>16))>>>0) / 4294967296;
+  }
+
+  // ---------- rotation ----------
+  function eulerMat(dx, dy, dz){
+    var rx=dx*Math.PI/180, ry=dy*Math.PI/180, rz=dz*Math.PI/180;
+    var cx=Math.cos(rx), sx=Math.sin(rx), cy=Math.cos(ry), sy=Math.sin(ry),
+        cz=Math.cos(rz), sz=Math.sin(rz);
+    // R = Rz * Ry * Rx, row-major
+    return [
+      cz*cy,  cz*sy*sx - sz*cx,  cz*sy*cx + sz*sx,
+      sz*cy,  sz*sy*sx + cz*cx,  sz*sy*cx - cz*sx,
+      -sy,    cy*sx,             cy*cx
+    ];
+  }
+  var IDENT = [1,0,0, 0,1,0, 0,0,1];
+  function matMul(A, B){
+    var o=new Array(9), i, j, k, s;
+    for(i=0;i<3;i++) for(j=0;j<3;j++){ s=0; for(k=0;k<3;k++) s+=A[i*3+k]*B[k*3+j]; o[i*3+j]=s; }
+    return o;
+  }
+  function matApply(m, x, y, z){
+    return [m[0]*x+m[1]*y+m[2]*z, m[3]*x+m[4]*y+m[5]*z, m[6]*x+m[7]*y+m[8]*z];
+  }
+  function matApplyT(m, x, y, z){   // transpose = inverse, for rotations
+    return [m[0]*x+m[3]*y+m[6]*z, m[1]*x+m[4]*y+m[7]*z, m[2]*x+m[5]*y+m[8]*z];
+  }
+  function mirrorMat(m, axis){      // S * m * S, S = diag with -1 on `axis`
+    var S=[1,1,1]; S[axis]=-1;
+    var o=new Array(9), i, j;
+    for(i=0;i<3;i++) for(j=0;j<3;j++) o[i*3+j]=S[i]*m[i*3+j]*S[j];
+    return o;
+  }
+
+  // ---------- signed distance, in model space ----------
+  function sdEllipsoid(px, py, pz, c, r){
+    var qx=(px-c[0])/r[0], qy=(py-c[1])/r[1], qz=(pz-c[2])/r[2];
+    var k=Math.sqrt(qx*qx+qy*qy+qz*qz);
+    return (k-1) * Math.min(r[0], Math.min(r[1], r[2]));
+  }
+  function sdBox(px, py, pz, c, h, m){
+    var l = matApplyT(m, px-c[0], py-c[1], pz-c[2]);
+    var dx=Math.abs(l[0])-h[0], dy=Math.abs(l[1])-h[1], dz=Math.abs(l[2])-h[2];
+    var ox=Math.max(dx,0), oy=Math.max(dy,0), oz=Math.max(dz,0);
+    return Math.sqrt(ox*ox+oy*oy+oz*oz) + Math.min(Math.max(dx,Math.max(dy,dz)), 0);
+  }
+  function sdCapsule(px, py, pz, a, b, ra, rb){
+    var bax=b[0]-a[0], bay=b[1]-a[1], baz=b[2]-a[2];
+    var pax=px-a[0],   pay=py-a[1],   paz=pz-a[2];
+    var ll = bax*bax + bay*bay + baz*baz;
+    if(ll < 1e-12) return Math.sqrt(pax*pax+pay*pay+paz*paz) - Math.max(ra, rb);
+    var t = clamp((pax*bax + pay*bay + paz*baz)/ll, 0, 1);
+    var ex=pax-bax*t, ey=pay-bay*t, ez=paz-baz*t;
+    return Math.sqrt(ex*ex+ey*ey+ez*ez) - (ra + (rb-ra)*t);
+  }
+
+  // ---------- normalise one recipe into flat instances ----------
+  function normalise(recipe, errors, warnings){
+    var palette = {}, key;
+    var src = (recipe.palette && typeof recipe.palette==='object') ? recipe.palette : {};
+    for(key in src){ var rgb=parseHex(src[key]); if(rgb) palette[key]=rgb; }
+    for(key in FALLBACK_PALETTE){ if(!palette[key]) palette[key]=parseHex(FALLBACK_PALETTE[key]); }
+    var firstColour = null;
+    for(key in palette){ if(!firstColour) firstColour=palette[key]; }
+
+    function colourOf(c){
+      if(Array.isArray(c)){
+        var A=palette[c[0]]||firstColour, B=palette[c[1]]||A;
+        return [A, B];
+      }
+      var one = palette[c] || firstColour;
+      return [one, one];
+    }
+
+    var poseM = IDENT;
+    if(Array.isArray(recipe.pose)){
+      var pv = vec3(recipe.pose, 0, 0, 0);
+      poseM = eulerMat(pv[0], pv[1], pv[2]);
+    }
+
+    var parts = recipe.parts, byId = {}, ordered = [], i;
+
+    // pass 1: shape, geometry and colour, still unposed
+    for(i=0; i<parts.length; i++){
+      var q = parts[i];
+      if(!q || typeof q!=='object'){ warnings.push('part '+i+' is not an object; skipped'); continue; }
+      var id = (typeof q.id==='string' && q.id) ? q.id : ('part'+i);
+      if(byId[id]){ id = id+'#'+i; }
+      var raw = String(q.k || q.kind || q.shape || '').toLowerCase().trim();
+      var k = SHAPE_ALIAS[raw];
+      if(!k){ warnings.push('part "'+id+'": unknown shape "'+(raw||'(missing)')+'"; skipped'); continue; }
+
+      var part = { id:id, k:k, index:ordered.length,
+                   role: (num(q.role,1)===2 ? 2 : 1),
+                   pri: num(q.pri, 0),
+                   parent: (typeof q.parent==='string') ? q.parent : null,
+                   clip: (typeof q.clip==='string') ? q.clip : null,
+                   mirror: null, colour: colourOf(q.c) };
+      var mAxis = String(q.m || q.mirror || '').toLowerCase();
+      if(mAxis==='x') part.mirror=0; else if(mAxis==='y') part.mirror=1; else if(mAxis==='z') part.mirror=2;
+
+      if(k==='capsule'){
+        part.a = vec3(q.a || q.from, 0, -0.4, 0);
+        part.b = vec3(q.b || q.to,   0,  0.4, 0);
+        var rr = radii2(q.r, 0.15);
+        part.ra = rr[0]; part.rb = rr[1];
+        part.origin = part.a.slice();
+      } else if(k==='ellipsoid'){
+        part.p = vec3(q.p || q.at || q.c0, 0, 0, 0);
+        part.r = vec3(q.r || q.h, 0.2, 0.2, 0.2).map(Math.abs);
+        part.origin = part.p.slice();
+      } else {
+        part.p = vec3(q.p || q.at, 0, 0, 0);
+        part.h = vec3(q.h || q.size || q.r, 0.2, 0.2, 0.2).map(Math.abs);
+        var rv = Array.isArray(q.rot) ? vec3(q.rot, 0, 0, 0) : [0,0,0];
+        part.rot = eulerMat(rv[0], rv[1], rv[2]);
+        part.origin = part.p.slice();
+      }
+      byId[id] = part; ordered.push(part);
+    }
+
+    if(!ordered.length){ errors.push('no usable parts in this recipe'); return null; }
+
+    // pass 2: growth offsets by walking parents, cycles fall back to roots
+    var g0 = {}, guard = 0;
+    function growthOffset(part){
+      if(g0[part.id] !== undefined) return g0[part.id];
+      g0[part.id] = 0;                       // provisional, breaks any cycle
+      var par = part.parent ? byId[part.parent] : null;
+      if(par && par !== part){
+        if(guard++ > ordered.length*4){
+          warnings.push('parent chain for "'+part.id+'" is cyclic; treated as a root');
+          return 0;
+        }
+        var base = growthOffset(par);
+        var dx=part.origin[0]-par.origin[0], dy=part.origin[1]-par.origin[1], dz=part.origin[2]-par.origin[2];
+        g0[part.id] = base + Math.sqrt(dx*dx+dy*dy+dz*dz);
+      } else if(part.parent && !par){
+        warnings.push('part "'+part.id+'" names an unknown parent "'+part.parent+'"');
+      }
+      return g0[part.id];
+    }
+    for(i=0;i<ordered.length;i++) growthOffset(ordered[i]);
+
+    // pass 3: pose the whole model, then expand mirrors into instances
+    var insts = [];
+    function emit(part, sign){
+      var S = (sign && part.mirror!==null) ? part.mirror : -1;
+      function pt(v){
+        var x=v[0], y=v[1], z=v[2];
+        if(S===0) x=-x; else if(S===1) y=-y; else if(S===2) z=-z;
+        return matApply(poseM, x, y, z);
+      }
+      var inst = { id:part.id, k:part.k, role:part.role, pri:part.pri,
+                   clip:part.clip, colour:part.colour, index:insts.length,
+                   g0: g0[part.id] || 0, mirrored: S>=0 };
+      if(part.k==='capsule'){
+        inst.a = pt(part.a); inst.b = pt(part.b); inst.ra = part.ra; inst.rb = part.rb;
+        inst.origin = inst.a;
+      } else if(part.k==='ellipsoid'){
+        inst.p = pt(part.p);
+        // a uniform pose rotation of an axis-aligned ellipsoid is approximated by
+        // its radii; exactness here would need a full quadric and buys nothing at
+        // this resolution.
+        inst.r = part.r.slice();
+        inst.origin = inst.p;
+      } else {
+        inst.p = pt(part.p); inst.h = part.h.slice();
+        var m = (S>=0) ? mirrorMat(part.rot, S) : part.rot;
+        inst.rot = matMul(poseM, m);
+        inst.origin = inst.p;
+      }
+      insts.push(inst);
+    }
+    for(i=0;i<ordered.length;i++){
+      emit(ordered[i], false);
+      if(ordered[i].mirror!==null) emit(ordered[i], true);
+    }
+    return { insts:insts, parts:ordered, palette:palette,
+             ground: (recipe.ground==='sit' ? 'sit' : 'float') };
+  }
+
+  // ---------- bounding box of the posed instances, in model units ----------
+  function modelBounds(insts){
+    var lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9], i, j;
+    function grow(c, e){
+      for(j=0;j<3;j++){
+        if(c[j]-e[j] < lo[j]) lo[j]=c[j]-e[j];
+        if(c[j]+e[j] > hi[j]) hi[j]=c[j]+e[j];
+      }
+    }
+    for(i=0;i<insts.length;i++){
+      var t=insts[i];
+      if(t.k==='capsule'){
+        var r=Math.max(t.ra, t.rb);
+        grow(t.a, [r,r,r]); grow(t.b, [r,r,r]);
+      } else if(t.k==='ellipsoid'){
+        grow(t.p, t.r);
+      } else {
+        var m=t.rot, e=[0,0,0];
+        for(j=0;j<3;j++) e[j]=Math.abs(m[j*3])*t.h[0]+Math.abs(m[j*3+1])*t.h[1]+Math.abs(m[j*3+2])*t.h[2];
+        grow(t.p, e);
+      }
+    }
+    for(j=0;j<3;j++){ if(!(hi[j]>lo[j])){ lo[j]-=0.01; hi[j]+=0.01; } }
+    return { lo:lo, hi:hi };
+  }
+
+  // ---------- rasterise the posed instances into the block ----------
+  // Nearest-surface-wins, so the result does not depend on the order the model
+  // happened to list the parts in.
+  function rasterise(model, s, ctr, oy){
+    var insts = model.insts, n = insts.length, i;
+    var type = new Uint8Array(NCELL), col = new Float32Array(NCELL*3), gkey = new Float32Array(NCELL);
+
+    // minimum feature size, expressed in model units for this fit
+    var rmin = MIN_CELLS / s;
+    var geo = new Array(n), slotOf = {}, slots = [], partSlot = new Int32Array(n);
+    for(i=0;i<n;i++){
+      var t = insts[i], g;
+      if(slotOf[t.id]===undefined){ slotOf[t.id]=slots.length; slots.push(t.id); }
+      partSlot[i]=slotOf[t.id];
+      if(t.k==='capsule')      g={k:0, a:t.a, b:t.b, ra:Math.max(t.ra,rmin), rb:Math.max(t.rb,rmin)};
+      else if(t.k==='ellipsoid') g={k:1, p:t.p, r:[Math.max(t.r[0],rmin),Math.max(t.r[1],rmin),Math.max(t.r[2],rmin)]};
+      else                     g={k:2, p:t.p, h:[Math.max(t.h[0],rmin),Math.max(t.h[1],rmin),Math.max(t.h[2],rmin)], m:t.rot};
+      geo[i]=g;
+    }
+    var clipSlot = new Int32Array(n);
+    for(i=0;i<n;i++){
+      var cs = insts[i].clip!==null && slotOf[insts[i].clip]!==undefined ? slotOf[insts[i].clip] : -1;
+      clipSlot[i] = cs;
+    }
+
+    var sd = new Float64Array(n), pmin = new Float64Array(slots.length);
+    var xi, zi, iy, ci, filled = 0;
+
+    for(iy=0; iy<NY; iy++){
+      var my = ((iy + 0.5) - oy)/s + ctr[1];
+      for(zi=0; zi<NZ; zi++){
+        var mz = ((zi - HZ))/s + ctr[2];
+        for(xi=0; xi<NX; xi++){
+          var mx = ((xi - HX))/s + ctr[0];
+          var j, any = false;
+          for(j=0;j<slots.length;j++) pmin[j]=1e9;
+          for(j=0;j<n;j++){
+            var q=geo[j], d;
+            if(q.k===0)      d=sdCapsule(mx,my,mz, q.a, q.b, q.ra, q.rb);
+            else if(q.k===1) d=sdEllipsoid(mx,my,mz, q.p, q.r);
+            else             d=sdBox(mx,my,mz, q.p, q.h, q.m);
+            if(!isFinite(d)) d = 1e9;
+            sd[j]=d;
+            if(d < pmin[partSlot[j]]) pmin[partSlot[j]]=d;
+            if(d<=0) any=true;
+          }
+          if(!any) continue;
+
+          var best=-1, bestSd=-Infinity, bestPri=-Infinity;
+          for(j=0;j<n;j++){
+            if(sd[j]>0) continue;
+            if(clipSlot[j]>=0 && pmin[clipSlot[j]]>0) continue;
+            var pr=insts[j].pri;
+            if(pr>bestPri || (pr===bestPri && sd[j]>bestSd)){ bestPri=pr; bestSd=sd[j]; best=j; }
+          }
+          if(best<0) continue;
+
+          var w = insts[best];
+          ci = cellIndex(xi, iy, zi);
+          type[ci] = w.role;
+          var h01 = hash01(xi, iy, zi);
+          var A=w.colour[0], B=w.colour[1], mixv = h01*0.55, jit = 0.94 + h01*0.12;
+          col[ci*3]   = clamp((A[0]+(B[0]-A[0])*mixv)*jit, 0, 1);
+          col[ci*3+1] = clamp((A[1]+(B[1]-A[1])*mixv)*jit, 0, 1);
+          col[ci*3+2] = clamp((A[2]+(B[2]-A[2])*mixv)*jit, 0, 1);
+          var ox=mx-w.origin[0], oyy=my-w.origin[1], oz=mz-w.origin[2];
+          gkey[ci] = w.g0 + Math.sqrt(ox*ox+oyy*oyy+oz*oz);
+          filled++;
+        }
+      }
+    }
+
+    // MANDATORY: one non-finite growth key makes the Gardener's sort comparator
+    // return NaN, which neither throws nor orders reliably. Sweep them to the end.
+    var gmax = 0, ok;
+    for(ci=0; ci<NCELL; ci++){ if(type[ci]!==0){ ok=gkey[ci]; if(isFinite(ok) && ok>gmax) gmax=ok; } }
+    var swept = 0;
+    for(ci=0; ci<NCELL; ci++){ if(type[ci]!==0 && !isFinite(gkey[ci])){ gkey[ci]=gmax+1; swept++; } }
+
+    return { type:type, col:col, gkey:gkey, filled:filled, swept:swept };
+  }
+
+  // ---------- compile: parse, validate, fit, rasterise ----------
+  function compileRecipe(input){
+    var errors=[], warnings=[], recipe=null;
+
+    if(typeof input==='string'){
+      var txt = input.trim();
+      if(!txt){ return {ok:false, errors:['the recipe is empty'], warnings:warnings}; }
+      try { recipe = JSON.parse(txt); }
+      catch(e){ return {ok:false, errors:['that is not valid JSON — '+e.message], warnings:warnings}; }
+    } else if(input && typeof input==='object'){ recipe = input; }
+    else { return {ok:false, errors:['no recipe supplied'], warnings:warnings}; }
+
+    if(Array.isArray(recipe)) recipe = {parts:recipe};
+    if(!recipe || typeof recipe!=='object'){ return {ok:false, errors:['a recipe must be a JSON object'], warnings:warnings}; }
+    if(!Array.isArray(recipe.parts) || !recipe.parts.length){
+      return {ok:false, errors:['a recipe needs a non-empty "parts" array'], warnings:warnings};
+    }
+    if(recipe.parts.length > 64){
+      warnings.push('recipe has '+recipe.parts.length+' parts; only the first 64 are used');
+      recipe = Object.assign({}, recipe, {parts: recipe.parts.slice(0,64)});
+    }
+
+    var model = normalise(recipe, errors, warnings);
+    if(!model) return {ok:false, errors:errors.length?errors:['the recipe produced no parts'], warnings:warnings};
+
+    var bb = modelBounds(model.insts);
+    var ctr = [(bb.lo[0]+bb.hi[0])/2, (bb.lo[1]+bb.hi[1])/2, (bb.lo[2]+bb.hi[2])/2];
+    var bw = bb.hi[0]-bb.lo[0], bh = bb.hi[1]-bb.lo[1], bd = bb.hi[2]-bb.lo[2];
+    var spanXZ = 2*HX, spanY = NY - 2;
+    var s = FIT_MARGIN * Math.min(spanXZ/bw, Math.min(spanY/bh, spanXZ/bd));
+    if(!isFinite(s) || s<=0){ return {ok:false, errors:['the parts have no measurable extent'], warnings:warnings}; }
+
+    var out=null, frac=0, attempt;
+    for(attempt=0; attempt<5; attempt++){
+      var oy = (model.ground==='sit') ? (1 + (bh/2)*s) : (NY/2);
+      out = rasterise(model, s, ctr, oy);
+      frac = out.filled / NCELL;
+      if(frac<=FILL_HI) break;
+      s = s * Math.pow(FILL_HI/frac, 1/3) * 0.985;
+    }
+
+    if(out.filled===0){
+      errors.push('this recipe fills no cells at all — the parts are too thin, or they sit outside one another');
+      return {ok:false, errors:errors, warnings:warnings};
+    }
+    if(frac>FILL_MAX){
+      errors.push('this recipe fills '+Math.round(frac*100)+'% of the block; there would be almost no marble for the Sculptor to remove');
+      return {ok:false, errors:errors, warnings:warnings};
+    }
+    if(frac<FILL_LO){
+      warnings.push('only '+out.filled+' cells ('+(frac*100).toFixed(2)+'%) are filled; the form may be too thin to read');
+    }
+    if(frac>FILL_HI){
+      warnings.push('the form was re-fitted smaller to leave the Sculptor some marble');
+    }
+    if(out.swept>0){
+      warnings.push(out.swept+' cells had a non-finite growth key and were moved to the end of the build order');
+    }
+
+    var noun = (typeof recipe.noun==='string' && recipe.noun.trim()) ? recipe.noun.trim().slice(0,60) : 'form';
+    var form = {
+      noun: noun, label: noun,
+      fill: function(seed, rnd, noise, type, col, gkey){
+        type.set(out.type); col.set(out.col); gkey.set(out.gkey);
+      }
+    };
+    return { ok:true, form:form, recipe:recipe, model:model, errors:errors, warnings:warnings,
+             stats:{ filled:out.filled, fraction:frac, parts:model.parts.length,
+                     instances:model.insts.length, scale:s },
+             buffers:{ type:out.type, col:out.col } };
+  }
+
+  // ---------- a library of recipes, so the page works with no model at all ----------
+  var EXAMPLES = [
+    { name:'Aeroplane, tumbling', json: {
+      v:1, noun:'aeroplane', ground:'float', pose:[18,-34,62],
+      palette:{ body:'#E9EDF3', trim:'#D2455E', dark:'#28324B', glass:'#86C9E8' },
+      parts:[
+        {id:'fuselage', k:'capsule', a:[0,0,-0.85], b:[0,0,0.72], r:[0.24,0.15], c:['body','dark']},
+        {id:'wing', k:'box', p:[0.55,-0.02,0.02], h:[0.44,0.05,0.34], rot:[0,0,-7], c:'body', parent:'fuselage', m:'x'},
+        {id:'tailplane', k:'box', p:[0.26,0.12,-0.72], h:[0.22,0.04,0.13], c:'body', parent:'fuselage', m:'x'},
+        {id:'fin', k:'box', p:[0,0.28,-0.72], h:[0.04,0.22,0.15], c:'body', parent:'fuselage'},
+        {id:'engine', k:'capsule', a:[0.55,-0.10,0.22], b:[0.55,-0.10,-0.12], r:0.09, c:'dark', parent:'wing', m:'x'},
+        {id:'canopy', k:'ellipsoid', p:[0,0.17,0.22], r:[0.13,0.11,0.27], c:'glass', pri:1, parent:'fuselage'},
+        {id:'stripe', k:'box', p:[0,0.02,-0.10], h:[0.30,0.06,0.50], c:'trim', role:2, clip:'fuselage'}
+      ] } },
+    { name:'Toadstool', json: {
+      v:1, noun:'toadstool', ground:'sit',
+      palette:{ cap:'#C0392B', spot:'#F2E9DC', stalk:'#E4DCC6', gill:'#B9A98C' },
+      parts:[
+        {id:'stalk', k:'capsule', a:[0,-0.95,0], b:[0,0.14,0], r:[0.17,0.12], c:'stalk'},
+        {id:'cap', k:'ellipsoid', p:[0,0.24,0], r:[0.66,0.36,0.66], c:['cap','spot'], parent:'stalk'},
+        {id:'gills', k:'ellipsoid', p:[0,0.06,0], r:[0.50,0.09,0.50], c:'gill', role:2, parent:'stalk'},
+        {id:'spotA', k:'ellipsoid', p:[0.30,0.44,0.12], r:[0.15,0.10,0.15], c:'spot', role:2, pri:1, clip:'cap', parent:'cap'},
+        {id:'spotB', k:'ellipsoid', p:[-0.18,0.42,-0.30], r:[0.13,0.09,0.13], c:'spot', role:2, pri:1, clip:'cap', parent:'cap'},
+        {id:'spotC', k:'ellipsoid', p:[0.05,0.52,-0.05], r:[0.12,0.09,0.12], c:'spot', role:2, pri:1, clip:'cap', parent:'cap'}
+      ] } },
+    { name:'Chair', json: {
+      v:1, noun:'chair', ground:'sit',
+      palette:{ wood:'#9A6B3F', dark:'#5E4126', seat:'#C8A06A' },
+      parts:[
+        {id:'seat', k:'box', p:[0,0,0], h:[0.44,0.06,0.44], c:'seat'},
+        {id:'back', k:'box', p:[0,0.48,-0.38], h:[0.44,0.46,0.06], c:'wood', parent:'seat'},
+        {id:'legFront', k:'capsule', a:[0.36,-0.95,0.36], b:[0.36,-0.05,0.36], r:0.07, c:'dark', parent:'seat', m:'x'},
+        {id:'legBack', k:'capsule', a:[0.36,-0.95,-0.36], b:[0.36,-0.05,-0.36], r:0.07, c:'dark', parent:'seat', m:'x'},
+        {id:'rail', k:'capsule', a:[-0.40,0.30,-0.38], b:[0.40,0.30,-0.38], r:0.05, c:'dark', role:2, parent:'back'}
+      ] } },
+    { name:'Lighthouse', json: {
+      v:1, noun:'lighthouse', ground:'sit',
+      palette:{ stone:'#EAE6DA', band:'#C0392B', dark:'#3A4550', glass:'#F5D97B' },
+      parts:[
+        {id:'tower', k:'capsule', a:[0,-0.95,0], b:[0,0.44,0], r:[0.36,0.21], c:'stone'},
+        {id:'bandA', k:'box', p:[0,-0.55,0], h:[0.40,0.11,0.40], c:'band', role:2, clip:'tower', parent:'tower'},
+        {id:'bandB', k:'box', p:[0,-0.02,0], h:[0.34,0.10,0.34], c:'band', role:2, clip:'tower', parent:'tower'},
+        {id:'gallery', k:'ellipsoid', p:[0,0.50,0], r:[0.31,0.05,0.31], c:'dark', parent:'tower'},
+        {id:'lamp', k:'ellipsoid', p:[0,0.66,0], r:[0.20,0.17,0.20], c:'glass', pri:1, parent:'gallery'},
+        {id:'roof', k:'capsule', a:[0,0.80,0], b:[0,0.99,0], r:[0.23,0.02], c:'dark', parent:'lamp'}
+      ] } }
+  ];
+
+  // ---------- what changed ----------
+  function voxelDiff(prevType, prevCol, curType, curCol){
+    var added=0, removed=0, recoloured=0, ci;
+    for(ci=0; ci<NCELL; ci++){
+      var a = prevType[ci]!==0, b = curType[ci]!==0;
+      if(!a && b) added++;
+      else if(a && !b) removed++;
+      else if(a && b){
+        if(Math.abs(prevCol[ci*3]-curCol[ci*3])>0.004 ||
+           Math.abs(prevCol[ci*3+1]-curCol[ci*3+1])>0.004 ||
+           Math.abs(prevCol[ci*3+2]-curCol[ci*3+2])>0.004) recoloured++;
+      }
+    }
+    return { added:added, removed:removed, recoloured:recoloured };
+  }
+
+  function partsById(recipe){
+    var m={}, i;
+    if(recipe && Array.isArray(recipe.parts)){
+      for(i=0;i<recipe.parts.length;i++){
+        var q=recipe.parts[i]; if(!q||typeof q!=='object') continue;
+        m[(typeof q.id==='string' && q.id) ? q.id : ('part'+i)] = q;
+      }
+    }
+    return m;
+  }
+
+  function recipeDiff(prev, cur){
+    var A=partsById(prev), B=partsById(cur), id, key;
+    var addedIds=[], removedIds=[], changed=[], untouched=0;
+    for(id in B){
+      if(!(id in A)){ addedIds.push(id); continue; }
+      var fields=[], seen={};
+      for(key in A[id]) seen[key]=1;
+      for(key in B[id]) seen[key]=1;
+      for(key in seen){
+        if(key==='id') continue;
+        if(JSON.stringify(A[id][key]) !== JSON.stringify(B[id][key])) fields.push(key);
+      }
+      if(fields.length) changed.push({id:id, fields:fields, from:A[id], to:B[id]});
+      else untouched++;
+    }
+    for(id in A){ if(!(id in B)) removedIds.push(id); }
+    return { addedIds:addedIds, removedIds:removedIds, changed:changed, untouched:untouched };
+  }
+
+  // ---------- page furniture ----------
+  var elPromptRow = document.getElementById('prompt-row');
+  var elPrompt    = document.getElementById('prompt');
+  var elCompile   = document.getElementById('btn-compile');
+  var elStop      = document.getElementById('btn-stop');
+  var elExamples  = document.getElementById('sel-example');
+  var elLoadEx    = document.getElementById('btn-example');
+  var elRecipe    = document.getElementById('recipe');
+  var elBuild     = document.getElementById('btn-build');
+  var elRevert    = document.getElementById('btn-revert');
+  var elStatus    = document.getElementById('statusline');
+  var elNotices   = document.getElementById('notices');
+  var elDiff      = document.getElementById('diff');
+
+  var FORMS = {};                 // the engine looks forms up here
+  var lastGood = null;            // {recipe, type, col} of the last successful build
+
+  function setStatus(msg, bad){
+    elStatus.textContent = msg || '';
+    elStatus.className = bad ? 'bad' : '';
+  }
+  function showNotices(errors, warnings){
+    elNotices.textContent='';
+    function add(text, isErr){
+      var li=document.createElement('li');
+      li.textContent=text; if(isErr) li.className='err';
+      elNotices.appendChild(li);
+    }
+    (errors||[]).forEach(function(m){ add(m, true); });
+    (warnings||[]).forEach(function(m){ add(m, false); });
+  }
+
+  function renderDiff(prev, cur, vd){
+    if(!prev){ elDiff.hidden=true; return; }
+    var rd = recipeDiff(prev.recipe, cur.recipe);
+    var bits=[], i;
+    for(i=0;i<rd.changed.length;i++){
+      bits.push(rd.changed[i].id+'.'+rd.changed[i].fields.join(', '+rd.changed[i].id+'.'));
+    }
+    var html = '<p class="dhead">what changed since the previous build</p><ul>';
+    if(rd.addedIds.length)   html += '<li><span class="add">+ parts</span> ' + rd.addedIds.join(', ') + '</li>';
+    if(rd.removedIds.length) html += '<li><span class="del">- parts</span> ' + rd.removedIds.join(', ') + '</li>';
+    if(bits.length)          html += '<li>edited ' + bits.join(' · ') + '</li>';
+    if(!rd.addedIds.length && !rd.removedIds.length && !bits.length)
+                             html += '<li class="same">no part changed</li>';
+    html += '<li><span class="add">+' + fmt(vd.added) + ' voxels</span> · ' +
+            '<span class="del">-' + fmt(vd.removed) + ' voxels</span> · ' +
+            fmt(vd.recoloured) + ' recoloured · ' +
+            '<span class="same">' + rd.untouched + ' parts untouched</span></li>';
+    html += '</ul>';
+    elDiff.innerHTML = html;
+    elDiff.hidden = false;
+  }
+
+  // ---------- build a compiled recipe, and report the difference ----------
+  function applyCompiled(res){
+    var prev = lastGood;
+    FORMS.studio = res.form;
+    var seed = (typeof spec!=='undefined' && spec) ? spec.seed : 7;
+    buildSpecimen(seed, 'studio');
+    t = RM ? 0.62 : 0; holdUntil = 0;
+    setCounts(true);
+    runVerify();
+    var vd = prev ? voxelDiff(prev.type, prev.col, res.buffers.type, res.buffers.col) : null;
+    lastGood = { recipe: res.recipe, type: res.buffers.type, col: res.buffers.col };
+    if(vd) renderDiff(prev, lastGood, vd);
+    else elDiff.hidden = true;
+    setStatus(res.stats.parts + ' parts → ' + fmt(res.stats.filled) + ' voxels (' +
+              (res.stats.fraction*100).toFixed(1) + '% of the block)');
+    showNotices(res.errors, res.warnings);
+  }
+
+  function buildFrom(input){
+    var res = compileRecipe(input);
+    if(!res.ok){
+      showNotices(res.errors, res.warnings);
+      setStatus('nothing built — the recipe was refused', true);
+      return false;
+    }
+    applyCompiled(res);
+    return true;
+  }
+
+  // ---------- asking Claude for a recipe ----------
+  var SCHEMA_BRIEF = [
+    'You write RECIPES for a voxel sculpture engine. Reply with JSON only, no prose.',
+    '',
+    'Shape of a recipe:',
+    '{ "v":1, "noun":"<two or three words>", "ground":"sit"|"float",',
+    '  "pose":[degX,degY,degZ],',
+    '  "palette":{"<name>":"#rrggbb", ...},',
+    '  "parts":[ ... ] }',
+    '',
+    'Coordinates are ABSOLUTE in a normalised cube: x, y and z each run -1..1, +y is up.',
+    'The page fits the whole model into its block, so never think about pixels or cells.',
+    'There are exactly three part kinds:',
+    '  {"id":"..","k":"capsule","a":[x,y,z],"b":[x,y,z],"r":radius or [rStart,rEnd], ...}',
+    '     a capsule with two different radii IS a cone, so use it for noses, spires and tapered limbs',
+    '  {"id":"..","k":"ellipsoid","p":[x,y,z],"r":[rx,ry,rz], ...}',
+    '  {"id":"..","k":"box","p":[x,y,z],"h":[hx,hy,hz],"rot":[degX,degY,degZ], ...}',
+    'Every part also takes:',
+    '  "c": a palette name, or two names to blend between',
+    '  "parent": another part id — it does NOT move the part, it makes this part start',
+    '            growing when the parent grows past its root',
+    '  "m": "x" | "y" | "z" — emit a mirrored twin, for wings, legs, ears, arms',
+    '  "clip": another part id — paint only where that part already is, for stripes and markings',
+    '  "role": 2 for secondary detail, "pri": a number, higher wins where parts overlap',
+    '',
+    'Rules: 6 to 20 parts. Keep every coordinate inside -1..1. Radii between 0.03 and 0.7.',
+    'The block is 27 by 27 by 40 cells, so aim for a clear silhouette; faces, text and fine',
+    'texture cannot survive at that size. Convey style through palette and proportion.',
+    'Use "pose" to tilt the whole subject when the request implies motion or tumbling.'
+  ].join('\n');
+
+  var sampleApi = null, inflight = null;
+
+  function sampleInput(request){
+    var turns = [];
+    var head = SCHEMA_BRIEF + '\n\nRequest: ' + request;
+    if(lastGood && lastGood.recipe){
+      head += '\n\nThis is a REVISION. Here is the current recipe. Change as little as possible:\n' +
+              JSON.stringify(lastGood.recipe);
+    }
+    turns.push({ role:'user', content: head });
+    return turns;
+  }
+
+  function sampleFailed(e){
+    var code = (e && e.code) || 'upstream_error';
+    if(code==='cancelled'){ setStatus(''); return; }
+    if(code==='refused'){
+      elRecipe.value = lastGood ? JSON.stringify(lastGood.recipe, null, 1) : elRecipe.value;
+      setStatus('Claude declined that request. Try describing a different subject.', true);
+      showNotices(['Nothing was built. The form on screen is unchanged.'], []);
+      return;
+    }
+    if(code==='invalid_json'){
+      if(e && e.text) elRecipe.value = e.text;
+      setStatus('the reply was not valid JSON — it is in the editor, edit it or compile again', true);
+      showNotices(['You can repair the JSON by hand and press "Build this recipe".'], []);
+      return;
+    }
+    if(code==='empty_completion'){
+      setStatus('nothing came back — try asking for something simpler', true); return;
+    }
+    if(code==='rate_limited' || code==='session_expired' || code==='upstream_error'){
+      setStatus('the model is unavailable just now (' + code + ') — you can try again', true); return;
+    }
+    // not_granted, sampling_disabled, not_declared, capability_disabled, capability_removed
+    elPromptRow.hidden = true;
+    setStatus('asking in words is not available in this view — the recipe editor still works', true);
+  }
+
+  async function askClaude(){
+    var request = (elPrompt.value||'').trim();
+    if(!request){ setStatus('describe something first', true); return; }
+    if(!sampleApi) return;
+    inflight = new AbortController();
+    elCompile.disabled = true; elStop.hidden = false;
+    elDiff.hidden = true; showNotices([], []);
+    setStatus('Thinking…');
+    var started = false;
+    try {
+      var json = await sampleApi.json(sampleInput(request), {
+        signal: inflight.signal,
+        modelTier: 'default',
+        onText: function(ev){
+          if(!started){ started = true; setStatus('writing the recipe…'); }
+          elRecipe.value = ev.text;
+        }
+      });
+      elRecipe.value = JSON.stringify(json, null, 1);
+      buildFrom(json);
+    } catch(e){
+      sampleFailed(e);
+    } finally {
+      elCompile.disabled = false; elStop.hidden = true; inflight = null;
+    }
+  }
+
+  // ---------- wiring ----------
+  EXAMPLES.forEach(function(ex, i){
+    var o=document.createElement('option'); o.value=String(i); o.textContent=ex.name;
+    elExamples.appendChild(o);
+  });
+  function loadExample(i){
+    elRecipe.value = JSON.stringify(EXAMPLES[i].json, null, 1);
+  }
+  elLoadEx.addEventListener('click', function(){
+    loadExample(parseInt(elExamples.value,10)||0);
+    setStatus('example loaded — press "Build this recipe"');
+  });
+  elBuild.addEventListener('click', function(){ buildFrom(elRecipe.value); });
+  elRevert.addEventListener('click', function(){
+    if(!lastGood){ setStatus('nothing has been built yet', true); return; }
+    elRecipe.value = JSON.stringify(lastGood.recipe, null, 1);
+    setStatus('editor reset to the recipe now on screen');
+  });
+  elStop.addEventListener('click', function(){ if(inflight) inflight.abort(); });
+  elCompile.addEventListener('click', askClaude);
+  elPrompt.addEventListener('keydown', function(e){
+    if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); askClaude(); }
+  });
+
+  btnPlay.textContent = playing ? 'Pause' : 'Play';
+  btnPlay.addEventListener('click', function(){
+    playing=!playing; btnPlay.textContent=playing?'Pause':'Play';
+    if(playing && t>=1){ t=0; }
+  });
+  scrub.addEventListener('pointerdown', function(){ scrubbing=true; });
+  scrub.addEventListener('pointerup',   function(){ scrubbing=false; });
+  scrub.addEventListener('input', function(){ t=parseFloat(scrub.value); holdUntil=0; setCounts(false); });
+  document.getElementById('btn-speed').addEventListener('click', function(){
+    speedIdx=(speedIdx+1)%speeds.length;
+    this.innerHTML=String(speeds[speedIdx]).replace('0.5','½')+'×';
+  });
+  document.getElementById('btn-xray').addEventListener('click', function(){
+    xray=!xray; this.setAttribute('aria-pressed', String(xray)); applyXray(xray);
+  });
+  document.getElementById('btn-seed').addEventListener('click', function(){
+    var ns=((spec.seed*1664525+1013904223)>>>0)%100000;
+    buildSpecimen(ns===spec.seed?ns+1:ns, 'studio');
+    t=RM?0.62:0; holdUntil=0; setCounts(true); runVerify();
+  });
+
+  // ---------- first form on screen, with no model and no network ----------
+  loadExample(0);
+  buildFrom(EXAMPLES[0].json);
+  startLoop();
+
+  // The prompt box appears only if this view can actually reach a model. On
+  // GitHub Pages it never can, and the page is complete without it.
+  if(window.claude && typeof window.claude.use === 'function'){
+    window.claude.use('sample').then(function(s){
+      if(s){ sampleApi = s; elPromptRow.hidden = false; }
+    }, function(){ /* unavailable; the editor is the interface */ });
+  }
+})();
+</script>
