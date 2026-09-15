@@ -5,8 +5,8 @@
 # Read together with descriptiles/META.a2ml (decisions) and ROADMAP.adoc.
 
 [metadata]
-version = "0.3.0"
-last-updated = "2026-08-31"
+version = "0.4.0"
+last-updated = "2026-09-14"
 
 [project-context]
 name = "The Sculptor and the Gardener (large-language-michelangelo)"
@@ -14,37 +14,46 @@ purpose = "Interactive demonstration that generation-by-removal and generation-b
 origin = "A challenge prompt ('generate an image by removing only') that ~10 LLMs called mathematically impossible; this page is the verdict that they were wrong about the mathematics."
 
 [roadmap]
-shipped = ["0 housekeeping/RSR", "1 maths-in-motion instruments", "2 many forms one machinery"]
-next = "3 prompt-driven forms (form compiler) — uncommissioned"
-research = "4 addressable-revision experiment, error taxonomy, diffusion pane — uncommissioned"
-proofs-live = ["P-1 disjointness", "P-2 completeness", "P-3 convergence"]
-proofs-todo = ["P-4 interleaving equivalence", "P-5 compiled-form admissibility", "P-6 monotonicity", "P-7 determinism by construction"]
+shipped = ["0 housekeeping/RSR", "1 maths-in-motion instruments", "2 many forms one machinery", "3 v0.2 prompt-driven forms (studio.html form compiler)"]
+next = "3 v0.3 reference-image mode — uncommissioned; 5 R2 interleaving property test — planned"
+research = "4 addressable-revision experiment, error taxonomy, diffusion pane — uncommissioned; 5 R1..R6 research increments planned 2026-09-14, R1 shipped"
+proofs-live = ["P-1 disjointness", "P-2 completeness", "P-3 convergence", "P-5 live half — a compiled recipe is verified by the same partition checker as a hand-coded form"]
+proofs-todo = ["P-4 interleaving equivalence", "P-5 mechanised admissibility witness", "P-6 monotonicity", "P-7 determinism by construction — evidence clause discharged v0.4.0, proof outstanding"]
+mechanisation-target = "Idris2 — decided 2026-09-14; discriminator is re-runnability, the estate ships idris2-abi-check CI tooling"
 
 [component-status]
-page = { percent = 100, notes = "index.html: five forms, verifier, instruments, reduced-motion parking; single pinned dependency (three.js 0.160.0 cdnjs UMD)" }
-ci = { percent = 100, notes = "5 gates (SPDX split, dependency pin, artifact shape, action SHA pins, placeholders) — green on main" }
+page = { percent = 100, notes = "index.html: five forms, verifier, instruments, reduced-motion parking; single pinned dependency (three.js 0.160.0 cdnjs UMD). Split into a marked shared-engine region and a page tail so studio.html can carry a byte-identical copy — the Artifact sandbox cannot load a local .js, so the engine is duplicated and a CI hash gate forbids drift." }
+studio = { percent = 85, notes = "studio.html: recipe compiler, rasteriser, prompt UI, diff panel, example library. Engine logic verified headlessly across four recipes; NOT YET RENDERED IN A BROWSER — the Three.js render, both panes, the scrub timeline and the prompt path are untested. That is the gate before this reaches 100." }
+tests = { percent = 20, notes = "test/determinism.test.mjs + test/golden.json: 12 golden fingerprints over the engine core, node --test, no Three.js. First tests in the repository. Covers determinism only — no coverage of the rasteriser, the diff, or any DOM path." }
+ci = { percent = 100, notes = "6 gates over every root *.html (SPDX split, dependency pin, artifact shape, action SHA pins, placeholders, shared-engine drift hash) plus a second job running the determinism suite. Every widened gate asserts it matched >=2 pages and the hash gate asserts a >=100-line region, so an empty glob or moved markers fail rather than pass vacuously. Each of the 6 gates and the determinism suite was proven to bite by a planted-defect negative control." }
 pages = { percent = 100, notes = "hand-packed github-pages tarball (org pins actions transitively); deployed green" }
 artifact = { percent = 100, notes = "published at claude.ai/code/artifact/38d095d3-4957-415c-9ac0-4ff2d3ad2773; same source file, host supplies doctype" }
 governance = { percent = 100, notes = "CoC/SECURITY/GOVERNANCE/MAINTAINERS/DCO; two-plane licence enforced line-1 by CI" }
-formal-proofs = { percent = 0, notes = "runtime verifier only; mechanised P-4..P-7 not started (deliberate — see rsr-profile notes)" }
+formal-proofs = { percent = 0, notes = "runtime verifier and golden tests only; no mechanised proof started. Target Idris2 (decided 2026-09-14). A passing golden test is evidence, not proof, and P-7 says so explicitly." }
+citation = { percent = 0, notes = "no tags, no releases, no DOI; CITATION.cff declares 0.3.0 aspirationally. Blocked at one owner step: the Zenodo<->GitHub OAuth grant must be enabled BEFORE any release is created, or Zenodo never sees it." }
 
 [settled-questions]
 resolved = [
   { question = "Is 'per demptionem' correct Latin for the subtractive pathway?", answer = "It is grammatical but uncoined — demptio is attested (Varro, removal of letters) yet the phrase is not an established term of art. Replaced with Michelangelo's own 'per forza di levare' / 'per via di porre' (1549 letter to Benedetto Varchi).", evidence = "owner's own search found nothing; D-08 in META.a2ml" },
   { question = "Can one committed file serve both the Artifact host and GitHub Pages?", answer = "Yes: commit the artifact-shaped file (no doctype); pages.yml prepends the doctype at assemble time; ci.yml gates the shape.", evidence = "D-01; pages run green" },
   { question = "Why is the letterform a hand-authored bitmap?", answer = "Canvas text metrics vary per OS/browser and would silently break same-seed-same-voxels.", evidence = "D-09" },
+  { question = "Mechanisation target for P-4..P-7: Idris2 or Lean?", answer = "Idris2. Both exist in the estate; the discriminator is re-runnability — idris2-abi-check CI tooling already ships, so a proof lands inside a gate rather than beside one.", evidence = "owner ruling 2026-09-14" },
+  { question = "Does a voxel grid make prompt-driven generation easier than full resolution?", answer = "Yes, and for a reason that is about verification rather than convenience. A recipe is ~300-800 tokens, so the model describes structure and never paints — a fast tier suffices. Full-resolution imagery would need an image model, which the artifact sandbox cannot host and which is exactly the unverifiable pipeline this project critiques. The discrete grid is also what makes the invariant checkable and revisions countable.", evidence = "owner question 2026-09-09; design settled in studio.html v0.4.0" },
   { question = "Is the licence pairing MPL-2.0 + CC-BY-SA-4.0 sound?", answer = "Yes — two planes (code vs prose), both share-alike; established estate practice (f117a humans.txt declares the same pattern).", evidence = "CI SPDX gates green" },
 ]
 
 [open-decisions]
 pending = [
-  { decision = "Commission roadmap 3 (prompt-driven forms) and/or 4 (research programme)", owner = "hyperpolymath", context = "explicitly parked by owner; proofs P-4/P-5 become load-bearing when 3 starts" },
-  { decision = "Mechanisation target for P-4..P-7 (Idris2 vs Lean)", owner = "hyperpolymath", context = "estate has both; Idris2 build-blocker classes are documented estate-wide" },
+  { decision = "Start Chrome with the Claude extension so studio.html can be rendered", owner = "hyperpolymath", context = "RULED 2026-09-14 (R-1): the owner starts the browser and Claude drives the page, running the full checklist — Three.js render, both panes, scrub timeline, in-page llmProof.verify(), a hand-recounted revision diff, prompt box absent offline. Explicitly NOT a pasted screenshot and NOT merge-then-verify. This is the only reason PR #9 is a draft; no browser was connected when last probed." },
+  { decision = "Enable the Zenodo<->GitHub integration for this repository", owner = "hyperpolymath", context = "RULED 2026-09-14 (R-2): enable NOW, then retro-tag v0.3.0 and cut v0.4.0 on merge — two versioned DOIs under one concept DOI. Still BLOCKING and mine alone to do: an OAuth grant on a metadatastician org repo, which Claude cannot perform. It must be enabled BEFORE any release is created or Zenodo never sees it." },
+  { decision = "ORCID for the Zenodo deposit", owner = "hyperpolymath", context = "Requested 2026-09-14 alongside R-2 and NOT supplied. CITATION.cff and .zenodo.json cannot carry it without the owner pasting the identifier; it must never be guessed. Leave the field out until then." },
 ]
 
 [route-to-next]
 steps = [
-  "If 3 is commissioned: define the form-spec interchange (cells+colours+growthKey) as a schema, then the picker+params compiler first",
+  "Render studio.html in a real browser — the gate on v0.4.0. Nothing ships until the page has actually executed: Three.js render, both panes, scrub timeline, in-page llmProof.verify(), and the prompt box appearing when sample resolves",
+  "Owner enables the Zenodo<->GitHub grant, then retro-tag v0.3.0 and release, so the concept DOI spans 0.3.0 onward and studio arrives as a versioned increment of an already-cited work",
+  "R2 as a property test before any proof: shuffle removal order >=1000 times and assert byte-identical final buffers",
   "P-4 first among proofs: finite-set interleaving equivalence is small and unlocks the others' framing",
   "Diffusion pane (4) reuses the pane scaffolding; needs a DDIM trajectory baked to a deterministic buffer",
 ]

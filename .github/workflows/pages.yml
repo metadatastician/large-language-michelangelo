@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
 #
-# Publish index.html to GitHub Pages.
+# Publish every committed page to GitHub Pages.
 #
-# The page is one self-contained HTML source fragment (a pinned Three.js UMD
-# build from cdnjs is its only external script), so the "site" is that fragment
-# assembled and served as index.html. ci.yml verifies the committed source;
-# this workflow verifies the rendered artifact and the live deployment.
+# Each page is one self-contained HTML source fragment (a pinned Three.js UMD
+# build from cdnjs is its only external script), so the "site" is those
+# fragments assembled and served under their own names: index.html is the
+# demonstration, studio.html the prompt-driven Studio. ci.yml verifies the
+# committed sources; this workflow verifies the rendered artifacts and the
+# live deployment.
 #
 # ── Why the document wrapper is added here ────────────────────────────────
 # index.html is Artifact-shaped: the Claude Artifact host wraps it in its own
@@ -52,42 +54,51 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Assemble the site from the committed page
+      - name: Assemble the site from every committed page
         run: |
           set -euo pipefail
           test -s index.html
           mkdir -p _site
-          awk '
-            BEGIN {
-              print "<!doctype html>"
-              print "<html lang=\"en\">"
-              print "<head>"
-              print "<meta charset=\"utf-8\">"
-              print "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-              in_head = 1
-            }
-            {
-              print
-              if (in_head && $0 ~ /<\/style>/) {
-                print "</head>"
-                print "<body>"
-                in_head = 0
+          n=0
+          for src in ./*.html; do
+            out="_site/$(basename "$src")"
+            awk -v src="$src" '
+              BEGIN {
+                print "<!doctype html>"
+                print "<html lang=\"en\">"
+                print "<head>"
+                print "<meta charset=\"utf-8\">"
+                print "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+                in_head = 1
               }
-            }
-            END {
-              if (in_head) {
-                print "::error file=index.html::source fragment has no closing style element" > "/dev/stderr"
-                exit 1
+              {
+                print
+                if (in_head && $0 ~ /<\/style>/) {
+                  print "</head>"
+                  print "<body>"
+                  in_head = 0
+                }
               }
-              print "</body>"
-              print "</html>"
-            }
-          ' index.html > _site/index.html
+              END {
+                if (in_head) {
+                  print "::error file=" src "::source fragment has no closing style element" > "/dev/stderr"
+                  exit 1
+                }
+                print "</body>"
+                print "</html>"
+              }
+            ' "$src" > "$out"
+            test -s "$out"
+            n=$((n+1))
+            echo "  $src -> $out ($(wc -c < "$out") bytes)"
+          done
+          # A silently-empty glob would ship an empty site and still deploy green.
+          [ "$n" -ge 2 ] || { echo "::error::assembled $n pages; expected at least index.html and studio.html"; exit 1; }
           mkdir -p _site/.well-known
           cp .well-known/*.txt _site/.well-known/
           # Bypass Jekyll — this is a plain static file, not a Jekyll source tree.
           touch _site/.nojekyll
-          echo "site assembled ($(wc -c < _site/index.html) bytes)"
+          echo "site assembled: $n pages"
 
       - name: Prove the verifier detects planted failures
         run: python3 .github/scripts/verify-pages-site.py --self-test
