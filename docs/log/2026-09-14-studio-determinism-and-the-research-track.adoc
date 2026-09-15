@@ -1,0 +1,199 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Studio, determinism, and the research track
+:date: 2026-09-14
+:revdate: 2026-09-14
+:toc:
+
+== What this is
+
+A record of the 2026-09-14 working session, written while the work it describes is still an
+open draft pull request. Everything below was measured against `feat/studio-prompt-forms` at
+`ee49841` on 2026-09-14, by command, at the time of writing.
+
+It is not a changelog entry. `CHANGELOG.md` already says what shipped. This says what was
+found to be *wrong* with claims the repository was already making, how each was checked, and
+what remains unproven. A repository heading for a DOI needs that record, because a citation
+inherits the repository's claims along with its code.
+
+== What shipped
+
+See `CHANGELOG.md` section 0.4.0 for the itemised list: `studio.html` (roadmap section 3 tier
+v0.2), the split of `index.html` into a marked shared-engine region and a page-specific tail,
+the widening of the CI page gates from one literal filename to every root `*.html`, and the
+repository's first tests.
+
+Two numbers, re-derived at write time rather than copied:
+
+[cols="2,1",options="header"]
+|===
+| Measure | Value on 2026-09-14
+
+| Gates in `.github/workflows/ci.yml`
+| 7, plus one informational step reporting the Node version
+
+| `node --test test/determinism.test.mjs`
+| 10 tests, 10 pass, 0 fail
+|===
+
+The determinism suite discharges the evidence clause of proof obligation P-7, which until
+this session claimed determinism was evidenced by byte-identical regeneration under test, in
+a repository that contained no tests. Issue #5 recorded that gap and *remains open*: the
+tests exist only on an unmerged branch, so the claim on `main` is still unevidenced.
+
+== Corrections made to claims the repository was already making
+
+Four, enumerated rather than counted from memory.
+
+=== 1. A gate count that contradicted itself inside one sentence
+
+`.machine_readable/STATE.a2ml` shipped a sentence naming seven gates in one clause and "all
+nine gates" in the next. Nothing had changed between the clauses; the number had been carried
+forward from an earlier state and never re-derived.
+
+Fixed by counting `- name:` entries in `ci.yml` and writing the measured number. The commit
+message that introduced the correction still contains the wrong figure, because commit
+messages are immutable. The correction lives in the file and in this record.
+
+=== 2. An unverified provenance claim in a public comment
+
+A pull request comment asserted that a function had existed "since v0.1.0". This had not been
+checked. It was replaced with a measured claim:
+
+----
+git log -S spawnChip -- index.html   ->  741eaa4
+git rev-list --max-parents=0         ->  741eaa4
+----
+
+`741eaa4` (2026-08-31, "feat: the Sculptor and the Gardener — one tree, two pathways") is the
+repository's first commit, so the function has existed since the beginning. That is a stronger
+statement than the one withdrawn, and unlike it, checkable.
+
+=== 3 and 4. Two stale commit SHAs in the project's notes
+
+A note recorded "shipped at <sha>". The SHA was correct when written and wrong afterwards.
+Correcting it by writing a newer SHA reproduced the defect immediately: the second number went
+stale as soon as the next commit landed.
+
+The fix was structural, not numeric. The line was rewritten to date itself, so a reader can
+see when it was true instead of trusting that it still is.
+
+== The general lesson
+
+*A countable claim must be recounted, not repeated.*
+
+All four corrections are the same failure. A number was derived once, written into a durable
+record, and thereafter copied forward by every reader — including automated ones — without
+anyone re-deriving it. The record kept asserting the number with undiminished confidence long
+after it stopped being true. No gate in this repository could catch it, because each document
+was internally well-formed. Only the world had moved.
+
+Two practices follow, and both are now in force here:
+
+* Any number in a durable record is re-derived by command at write time. Not checked against a
+  summary — re-derived.
+* Any sentence of the form "X is currently Y" carries its own date inline, so a stale claim
+  reads as dated rather than as current.
+
+This is the same class of defect the project exists to argue about. The project's thesis is
+that procedural, addressable construction is checkable in ways opaque generation is not. A
+prose record asserting uncheckable numbers is that failure mode in miniature.
+
+== The authorship cure
+
+All seven commits on the branch were authored `Mistral Vibe <vibe@mistral.ai>`, against an
+`origin/main` authored uniformly by the repository owner. The cause was a machine-global git
+identity rather than a per-repository setting, so it had been applied silently to every commit
+made on the machine.
+
+This is not cosmetic in a repository about to be assigned a DOI. *Commit authorship is the
+citation*: the version history is the provenance record a deposit points at, and a vendor
+identity in it misattributes the work.
+
+The branch was re-authored and re-signed. The cure was then proven content-neutral rather than
+asserted:
+
+[cols="3,2",options="header"]
+|===
+| Check | Result
+
+| `git diff 78cf915 ee49841 --stat` (pre- vs post-rewrite tip)
+| empty — not one byte of content differs
+
+| Commit subjects
+| 7 preserved
+
+| `Co-Authored-By` trailers
+| 7 preserved
+
+| Push
+| `--force-with-lease`, so a concurrent write would have refused
+
+| GitHub signature status
+| `verified: true` on all 7
+
+| Distinct authors on the branch
+| exactly 1
+
+| CI at `ee49841`
+| `ci` success, `pages` success
+|===
+
+Signing is configured over SSH and is required. The session had earlier passed
+`-c commit.gpgsign=false` on two commits, which the rewrite also cured.
+
+== Rulings taken
+
+Six owner decisions were recorded this session. Their authoritative text lives in
+`.machine_readable/STATE.a2ml` under the open-decisions block. They are listed here only so
+this record is navigable, and are not restated.
+
+[cols="1,3",options="header"]
+|===
+| Ruling | Effect
+
+| Render gate
+| The page must be driven in a real browser before anything ships. Not a pasted screenshot, not merge-then-verify.
+
+| Zenodo
+| Enable the integration now; retro-tag v0.3.0, then v0.4.0 on merge — two versioned DOIs under one concept DOI.
+
+| Next work
+| Fix the filed defects before starting any research increment.
+
+| Technical note
+| Lives in this repository, versioned with the code, deposited alongside it.
+
+| Commit identity
+| Re-author and re-sign the branch; force-push the draft.
+
+| Machine identity
+| Fix the global git identity immediately; leave already-merged history alone.
+|===
+
+== Open and blocked
+
+As of 2026-09-14:
+
+* *The render gate is not cleared.* `studio.html` has never been displayed in a browser. It is
+  staged and served locally and returns HTTP 200, and its logic is exercised headlessly by the
+  determinism suite, but nobody has seen it draw. The browser extension needed to drive it is
+  not connected.
+* *The Zenodo deposit is blocked* on an OAuth grant only the repository owner can make, and
+  which must be made before a release is created, or the release is never seen.
+* *An ORCID is outstanding.* It was requested and not supplied. No value is recorded anywhere
+  in this repository, and none will be guessed.
+* *Nine issues are open*: #2, #3, #4, #5, #6, #7, #8, #10, #11.
+
+== What was not done
+
+Stated explicitly, because the absence is the point.
+
+* The page was not rendered. Every claim here about `studio.html` concerns its source, its
+  headless behaviour, or its HTTP status — never its appearance or its interactive behaviour,
+  neither of which has been observed.
+* Pull request #9 is therefore a draft *on purpose*, not through neglect. It stays draft until
+  the page has been seen to work.
+* No release was tagged, no DOI minted, no artifact published.
+* Issue #5 was not closed, although the tests it asks for now exist. They exist only on an
+  unmerged branch, so the claim it flags is still unevidenced on `main`. An issue is closed
+  when it is factually dead, not when it looks cured.
