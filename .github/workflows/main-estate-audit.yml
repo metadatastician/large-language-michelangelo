@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: MPL-2.0
+# This workflow is managed by gh actions-lock.
+
+name: Central Estate CI/CD Audit
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_call:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  call-estate-audit:
+    uses: hyperpolymath/cicd-suite/.github/workflows/main-estate-audit.yml@31b5b45a89c9c05b8d20d50fd3bee56f4959952e # main
