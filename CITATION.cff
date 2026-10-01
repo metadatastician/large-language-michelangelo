@@ -6,6 +6,7 @@ type: software
 authors:
   - family-names: Jewell
     given-names: Jonathan D.A.
+    orcid: "https://orcid.org/0000-0002-3078-6652"
     alias: hyperpolymath
 license: MPL-2.0
 repository-code: "https://github.com/metadatastician/large-language-michelangelo"
