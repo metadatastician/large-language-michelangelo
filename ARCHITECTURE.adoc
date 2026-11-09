@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Architecture
+:toc: preamble
+
+== Purpose and shape
+
+Large Language Michelangelo is a static browser demonstration, not a service or
+a bundled application. Its two entry points are `index.html`, the synchronized
+Sculptor and Gardener demonstration, and `studio.html`, the prompt-driven recipe
+studio. Each is deliberately self-contained apart from the pinned Three.js
+0.160.0 browser script and web fonts.
+
+Both committed pages are Artifact-shaped HTML fragments. They have no doctype
+or local JavaScript bundle. The Pages workflow adds the document shell when it
+assembles the deployable site, so the same sources can also run in the Claude
+Artifact host.
+
+== Shared deterministic engine
+
+The region between the `BEGIN SHARED ENGINE` and `END SHARED ENGINE` markers is
+byte-identical in the two pages. CI compares those regions directly. The engine
+defines the 27 by 27 by 40 voxel column, seeded form generation, colour data,
+and the two complementary operation orders:
+
+* the Sculptor removes waste from the complete block;
+* the Gardener adds exactly the form cells in growth order.
+
+The browser rendering and instruments consume those buffers. The ledgers and
+triangle counts read engine state rather than precomputed display values, and
+`window.llmProof.verify()` checks the partition and convergence claims against
+live state.
+
+== Recipe studio
+
+`studio.html` adds a pure recipe compiler and revision-diff layer around the
+same engine. Recipes describe primitive parts and their relationships. The
+compiler validates and normalizes them into a form accepted by
+`generateSpecimen`; it does not introduce a second rendering engine.
+
+The `test/` directory contains the Node built-in-test harness and golden
+fixtures. `test/harness.mjs` extracts only the pure engine and recipe regions,
+rejecting browser, DOM, and Three.js references in that extracted code. The
+suite checks deterministic regeneration, fixture fingerprints, partition and
+convergence invariants, revision arithmetic, and compiler diagnostics without a
+browser or network access.
+
+== Publication and verification
+
+The `.github/workflows/` directory separates structural and determinism checks,
+rendered-site verification and deployment, secret scanning, and the shared
+estate audit. `.github/scripts/verify-pages-site.py` checks the assembled HTML
+artifact for local-reference, document, and accessibility defects.
+
+The Pages build assembles every root HTML page into `_site/`, copies the
+`.well-known/` records, disables Jekyll processing, and packs the artifact
+without unpinned transitive upload actions. Deployment and live verification
+run only for the default branch; pull requests stop after artifact validation.
+
+The `docs/` and `.machine_readable/` directories hold design records and machine
+metadata. They are inputs to review and estate tooling, not runtime dependencies
+of either browser page.
