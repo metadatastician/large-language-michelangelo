@@ -100,12 +100,15 @@ jobs:
           touch _site/.nojekyll
           echo "site assembled: $n pages"
 
+      - name: Build the Pages verifier
+        run: rustc -O --edition 2021 -o "${RUNNER_TEMP}/verify-pages-site" .github/scripts/verify-pages-site.rs
+
       - name: Prove the verifier detects planted failures
-        run: python3 .github/scripts/verify-pages-site.py --self-test
+        run: '"${RUNNER_TEMP}/verify-pages-site" --self-test'
 
       - name: Verify the rendered Pages artifact
         run: |
-          python3 .github/scripts/verify-pages-site.py \
+          "${RUNNER_TEMP}/verify-pages-site" \
             _site \
             --base-path /large-language-michelangelo/ \
             --expected-marker "The Sculptor and the Gardener"
