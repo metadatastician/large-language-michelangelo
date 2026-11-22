@@ -48,7 +48,7 @@ browser or network access.
 
 The `.github/workflows/` directory separates structural and determinism checks,
 rendered-site verification and deployment, secret scanning, and the shared
-estate audit. `.github/scripts/verify-pages-site.py` checks the assembled HTML
+estate audit. `.github/scripts/verify-pages-site.rs` checks the assembled HTML
 artifact for local-reference, document, and accessibility defects.
 
 The Pages build assembles every root HTML page into `_site/`, copies the
